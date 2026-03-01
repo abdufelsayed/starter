@@ -1,0 +1,43 @@
+{
+  "name": "@starter/docs",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite dev --port=4000",
+    "build": "vite build",
+    "start": "node .output/server/index.mjs",
+    "preview": "vite preview",
+    "types:check": "fumadocs-mdx && tsc --noEmit",
+    "postinstall": "fumadocs-mdx",
+    "clean": "git clean -xdf .output node_modules dist .turbo .tanstack .source .tsbuildinfo",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "catalog:tanstack",
+    "@tanstack/react-start": "catalog:tanstack",
+    "fumadocs-core": "16.6.5",
+    "fumadocs-mdx": "14.2.8",
+    "fumadocs-ui": "16.6.5",
+    "lucide-react": "catalog:ui",
+    "react": "catalog:react",
+    "react-dom": "catalog:react",
+    "tailwind-merge": "catalog:tailwind"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "@tailwindcss/vite": "catalog:tailwind",
+    "@tanstack/react-router-devtools": "catalog:tanstack",
+    "@types/bun": "catalog:build",
+    "@types/mdx": "^2.0.13",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react",
+    "@vitejs/plugin-react": "catalog:build",
+    "nitro": "catalog:build",
+    "srvx": "^0.11.5",
+    "tailwindcss": "catalog:tailwind",
+    "typescript": "catalog:build",
+    "vite": "catalog:build",
+    "vite-tsconfig-paths": "catalog:build"
+  }
+}

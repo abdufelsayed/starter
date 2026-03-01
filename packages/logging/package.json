@@ -1,0 +1,28 @@
+{
+  "name": "@starter/logging",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/logger.ts",
+    "./instrumentation": "./src/instrumentation.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@axiomhq/pino": "catalog:logging",
+    "@opentelemetry/api": "catalog:otel",
+    "@opentelemetry/exporter-trace-otlp-proto": "catalog:otel",
+    "@opentelemetry/resources": "catalog:otel",
+    "@opentelemetry/sdk-trace-base": "catalog:otel",
+    "@opentelemetry/semantic-conventions": "catalog:otel",
+    "pino": "catalog:logging"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "pino-pretty": "catalog:logging",
+    "typescript": "catalog:build"
+  }
+}

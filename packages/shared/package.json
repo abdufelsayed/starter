@@ -1,0 +1,20 @@
+{
+  "name": "@starter/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./nanoid": "./src/nanoid.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "typescript": "catalog:build"
+  }
+}

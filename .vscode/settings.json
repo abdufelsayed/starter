@@ -1,0 +1,66 @@
+{
+  "files.watcherExclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "search.exclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "files.readonlyInclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.oxc": "explicit",
+      "source.fixAll.oxc": "explicit",
+      "source.action.useSortedKeys.oxc": "explicit",
+      "source.action.useSortedAttributes.oxc": "explicit"
+    }
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.oxc": "explicit",
+      "source.fixAll.oxc": "explicit",
+      "source.action.useSortedKeys.oxc": "explicit",
+      "source.action.useSortedAttributes.oxc": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.oxc": "explicit",
+      "source.fixAll.oxc": "explicit",
+      "source.action.useSortedKeys.oxc": "explicit",
+      "source.action.useSortedAttributes.oxc": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.oxc": "explicit",
+      "source.fixAll.oxc": "explicit",
+      "source.action.useSortedKeys.oxc": "explicit",
+      "source.action.useSortedAttributes.oxc": "explicit"
+    }
+  },
+  "[json]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.oxc": "explicit",
+    "source.fixAll.oxc": "explicit",
+    "source.action.useSortedKeys.oxc": "explicit",
+    "source.action.useSortedAttributes.oxc": "explicit"
+  },
+  "biome.enabled": false
+}

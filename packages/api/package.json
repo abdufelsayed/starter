@@ -1,0 +1,32 @@
+{
+  "name": "@starter/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "catalog:otel",
+    "@orpc/experimental-pino": "catalog:orpc",
+    "@orpc/openapi": "catalog:orpc",
+    "@orpc/server": "catalog:orpc",
+    "@orpc/zod": "catalog:orpc",
+    "@sentry/bun": "catalog:sentry",
+    "@starter/auth": "workspace:*",
+    "@starter/db": "workspace:*",
+    "@starter/shared": "workspace:*",
+    "pino": "catalog:logging",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "typescript": "catalog:build"
+  }
+}

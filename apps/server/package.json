@@ -1,0 +1,29 @@
+{
+  "name": "@starter/server",
+  "type": "module",
+  "module": "index.ts",
+  "scripts": {
+    "build": "tsdown",
+    "clean": "git clean -xdf build node_modules dist .turbo .tsbuildinfo",
+    "dev": "bun --watch src/server.ts",
+    "start": "bun --import ./dist/instrument.server.mjs ./dist/server.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "catalog:otel",
+    "@opentelemetry/sdk-node": "catalog:otel",
+    "@orpc/otel": "catalog:orpc",
+    "@sentry/bun": "catalog:sentry",
+    "@starter/api": "workspace:*",
+    "@starter/auth": "workspace:*",
+    "@starter/env": "workspace:*",
+    "@starter/logging": "workspace:*"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "@types/bun": "catalog:build",
+    "pino-pretty": "catalog:logging",
+    "tsdown": "^0.19.0-beta.1",
+    "typescript": "catalog:build"
+  }
+}

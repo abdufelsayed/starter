@@ -1,0 +1,30 @@
+{
+  "name": "@starter/auth",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react/index.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@better-auth/stripe": "catalog:auth",
+    "@starter/db": "workspace:*",
+    "@starter/email": "workspace:*",
+    "@starter/env": "workspace:*",
+    "@starter/schemas": "workspace:*",
+    "@starter/shared": "workspace:*",
+    "@tanstack/react-query": "catalog:tanstack",
+    "better-auth": "catalog:auth",
+    "react": "catalog:react",
+    "stripe": "catalog:stripe"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "@types/react": "catalog:react",
+    "typescript": "catalog:build"
+  }
+}
