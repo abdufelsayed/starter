@@ -1,0 +1,10 @@
+{
+  "extends": "@starter/tsconfig/bun.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "paths": {
+      "@server/*": ["./src/*"]
+    }
+  }
+}

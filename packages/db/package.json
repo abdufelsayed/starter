@@ -1,0 +1,29 @@
+{
+  "name": "@starter/db",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
+    "db:generate": "bun with-env bun run drizzle-kit generate",
+    "db:migrate": "bun with-env bun run drizzle-kit migrate",
+    "db:pull": "bun with-env bun run drizzle-kit pull",
+    "db:push": "bun with-env bun run drizzle-kit push",
+    "db:studio": "bun with-env bun run drizzle-kit studio",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../apps/server/.env.local --"
+  },
+  "dependencies": {
+    "@starter/env": "workspace:*",
+    "drizzle-orm": "catalog:db",
+    "pg": "catalog:db"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "@types/pg": "catalog:db",
+    "drizzle-kit": "catalog:db",
+    "typescript": "catalog:build"
+  }
+}

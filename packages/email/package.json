@@ -1,0 +1,30 @@
+{
+  "name": "@starter/email",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./templates": "./src/templates/index.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
+    "dev": "email dev -p 3001 --dir ./src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-email/components": "^1.0.1",
+    "@starter/env": "workspace:*",
+    "react": "catalog:react",
+    "react-dom": "catalog:react",
+    "react-email": "^5.0.8",
+    "resend": "^6.6.0"
+  },
+  "devDependencies": {
+    "@starter/tsconfig": "workspace:*",
+    "@types/node": "catalog:build",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react",
+    "typescript": "catalog:build"
+  }
+}

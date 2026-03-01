@@ -1,0 +1,10 @@
+{
+  "extends": "@starter/tsconfig/react-library.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
