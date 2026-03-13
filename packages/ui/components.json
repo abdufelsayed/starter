@@ -12,14 +12,13 @@
   },
   "iconLibrary": "lucide",
   "rtl": true,
+  "menuColor": "default",
+  "menuAccent": "bold",
   "aliases": {
     "components": "@starter/ui/components",
     "utils": "@starter/ui/lib/utils",
     "ui": "@starter/ui/components",
     "lib": "@starter/ui/lib",
     "hooks": "@starter/ui/hooks"
-  },
-  "menuColor": "default",
-  "menuAccent": "bold",
-  "registries": {}
+  }
 }
