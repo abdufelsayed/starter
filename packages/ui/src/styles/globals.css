@@ -28,6 +28,12 @@
   --secondary: oklch(0.93 0.01 286.3);
   --secondary-foreground: oklch(0.24 0.01 248.23);
 
+  --info: var(--color-violet-500);
+  --info-foreground: var(--color-violet-900);
+
+  --invert: var(--color-zinc-900);
+  --invert-foreground: var(--color-zinc-50);
+
   --warning: oklch(0.69 0.1909 45.02);
   --warning-foreground: oklch(0.99 0 286.38);
 
@@ -97,6 +103,12 @@
   --secondary: oklch(0.25 0.01 271.18);
   --secondary-foreground: oklch(0.95 0 264.54);
 
+  --info: var(--color-violet-500);
+  --info-foreground: var(--color-violet-600);
+
+  --invert: var(--color-zinc-700);
+  --invert-foreground: var(--color-zinc-50);
+
   --warning: oklch(0.69 0.1909 45.02);
   --warning-foreground: oklch(0.99 0 286.38);
 
@@ -161,6 +173,12 @@
 
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-invert-foreground: var(--invert-foreground);
+  --color-invert: var(--invert);
+
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
 
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
