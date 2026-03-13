@@ -1,6 +1,6 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { ThemeProvider } from "better-themes";
 import { Toaster } from "sonner";
@@ -20,7 +20,7 @@ interface MyRouterContext {
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  server: { middleware: [routeLoggingMiddleware] },
+  component: RootComponent,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -41,9 +41,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       { rel: "apple-touch-icon", href: "/apple-icon.png", sizes: "180x180" },
     ],
   }),
-  component: RootComponent,
-  shellComponent: RootDocument,
   notFoundComponent: NotFound,
+  server: { middleware: [routeLoggingMiddleware] },
+  shellComponent: RootDocument,
 });
 
 function RootComponent() {

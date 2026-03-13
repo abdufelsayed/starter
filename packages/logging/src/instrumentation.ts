@@ -43,16 +43,16 @@ export function createOtelResource(config: OtelConfig) {
 
 export function createAxiomExporter(config: OtelConfig) {
   return new OTLPTraceExporter({
-    url: `${config.axiom.endpoint}/v1/traces`,
     headers: {
       Authorization: `Bearer ${config.axiom.token}`,
       "X-Axiom-Dataset": config.axiom.dataset,
     },
+    url: `${config.axiom.endpoint}/v1/traces`,
   });
 }
 
 export function createTraceSampler(environment: string) {
-  return new TraceIdRatioBasedSampler(environment === "production" ? 0.1 : 1.0);
+  return new TraceIdRatioBasedSampler(environment === "production" ? 0.1 : 1);
 }
 
 export function createBatchSpanProcessor(exporter: OTLPTraceExporter) {

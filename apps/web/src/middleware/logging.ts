@@ -19,9 +19,9 @@ export const loggingMiddleware = createMiddleware().server(async ({ next, server
 
     logger.info(
       {
-        serverFn,
         res: { status: "ok" },
         responseTime,
+        serverFn,
       },
       "server function completed",
     );
@@ -32,13 +32,13 @@ export const loggingMiddleware = createMiddleware().server(async ({ next, server
 
     logger.error(
       {
-        serverFn: { ...serverFn },
-        res: { status: "error" },
-        responseTime,
         err:
           error instanceof Error
             ? { type: error.name, message: error.message, stack: error.stack }
             : { type: "UnknownError", message: String(error) },
+        res: { status: "error" },
+        responseTime,
+        serverFn: { ...serverFn },
       },
       "server function failed",
     );

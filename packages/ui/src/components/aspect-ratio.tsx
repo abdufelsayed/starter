@@ -9,6 +9,7 @@ function AspectRatio({
     <div
       data-slot="aspect-ratio"
       style={
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
         {
           "--ratio": ratio,
         } as React.CSSProperties

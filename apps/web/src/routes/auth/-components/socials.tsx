@@ -4,6 +4,7 @@ import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { webEnv } from "@starter/env/web";
 import { Badge } from "@starter/ui/components/badge";
 import { Button } from "@starter/ui/components/button";
 import { GithubLogo } from "@starter/ui/logos/github";
@@ -13,12 +14,12 @@ import { authClient } from "@/lib/auth";
 
 const providers = [
   {
-    name: "google",
     logo: GoogleLogo,
+    name: "google",
   },
   {
-    name: "github",
     logo: GithubLogo,
+    name: "github",
   },
 ] as const;
 
@@ -29,9 +30,9 @@ export function Socials({ disabled }: { disabled?: boolean }) {
   const search = useSearch({ from: "/auth" });
   const [pendingProvider, setPendingProvider] = useState<Provider | null>(null);
   const signInSocial = useMutation(
-    authClient.session.signInSocial.mutationOptions({
+    authClient.signIn.social.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to sign in", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
@@ -40,8 +41,9 @@ export function Socials({ disabled }: { disabled?: boolean }) {
     setPendingProvider(provider);
     await signInSocial.mutateAsync(
       {
+        callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
+        errorCallbackURL: `${webEnv.VITE_WEB_URL}/auth/error`,
         provider,
-        callbackURL: search.redirect ?? window.location.href,
       },
       {
         onSettled: () => {

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { MailIcon } from "lucide-react";
 import { z } from "zod";
 
@@ -13,8 +13,8 @@ const magicLinkSentSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth/magic-link-sent")({
-  validateSearch: magicLinkSentSearchSchema,
   component: MagicLinkSentPage,
+  validateSearch: magicLinkSentSearchSchema,
 });
 
 function MagicLinkSentPage() {
@@ -36,18 +36,10 @@ function MagicLinkSentPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <Link to="/auth/sign-in">
-          <Button variant="outline" className="w-full">
-            Back to sign in
-          </Button>
-        </Link>
-        <div className="flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground md:flex-row md:gap-0">
-          <div>
-            No account?{" "}
-            <Link to="/auth/sign-up" className="text-primary hover:underline">
-              Sign up
-            </Link>
-          </div>
+        <Button variant="outline" render={<Link to="/auth/sign-in" />}>
+          Back to sign in
+        </Button>
+        <div className="flex items-center justify-end text-xs text-muted-foreground">
           <SupportLinks />
         </div>
       </CardContent>

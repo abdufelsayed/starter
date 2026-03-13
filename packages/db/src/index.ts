@@ -4,12 +4,12 @@ import { serverEnv } from "@starter/env/server";
 
 import * as schema from "./schema";
 
-const globalForDb = globalThis as unknown as {
-  db: NodePgDatabase<typeof schema> | undefined;
-};
+declare global {
+  var __db: NodePgDatabase<typeof schema> | undefined;
+}
 
 const db =
-  globalForDb.db ??
+  globalThis.__db ??
   drizzle({
     connection: {
       connectionString: serverEnv.DATABASE_URL,
@@ -19,7 +19,7 @@ const db =
   });
 
 if (serverEnv.NODE_ENV !== "production") {
-  globalForDb.db = db;
+  globalThis.__db = db;
 }
 
 export { db };

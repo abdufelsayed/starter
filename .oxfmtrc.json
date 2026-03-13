@@ -10,10 +10,32 @@
   "arrowParens": "always",
   "endOfLine": "lf",
   "quoteProps": "as-needed",
-  "experimentalTailwindcss": {
+  "sortImports": {
+    "order": "asc",
+    "ignoreCase": true,
+    "internalPattern": ["@starter/"],
+    "groups": [
+      "builtin",
+      "external",
+      "internal",
+      "alias",
+      {
+        "newlinesBetween": false
+      },
+      ["parent", "sibling", "index"],
+      "unknown"
+    ],
+    "customGroups": [
+      {
+        "groupName": "alias",
+        "elementNamePattern": ["@/**"]
+      }
+    ]
+  },
+  "sortTailwindcss": {
     "functions": ["cn", "cva"],
     "stylesheet": "./packages/ui/src/styles/globals.css"
   },
   "ignorePatterns": ["**/data/**", "routeTree.gen.ts"],
-  "experimentalSortPackageJson": true
+  "sortPackageJson": true
 }

@@ -1,4 +1,4 @@
-import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import * as React from "react";
 
@@ -6,6 +6,7 @@ import { seo } from "@/lib/seo";
 import appCss from "@/styles/app.css?url";
 
 export const Route = createRootRoute({
+  component: RootComponent,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -26,7 +27,6 @@ export const Route = createRootRoute({
       { rel: "apple-touch-icon", href: "/apple-icon.png", sizes: "180x180" },
     ],
   }),
-  component: RootComponent,
 });
 
 function RootComponent() {
@@ -39,7 +39,7 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning>
+    <html suppressHydrationWarning lang="en">
       <head>
         <HeadContent />
       </head>

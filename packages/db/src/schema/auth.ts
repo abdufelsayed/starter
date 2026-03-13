@@ -1,13 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  integer,
-  index,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, bigint, timestamp, boolean, integer, index } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -26,6 +18,7 @@ export const users = pgTable("users", {
   banExpires: timestamp("ban_expires"),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
   stripeCustomerId: text("stripe_customer_id"),
+  defaultOrganizationId: text("default_organization_id").notNull(),
 });
 
 export const sessions = pgTable(
@@ -44,7 +37,7 @@ export const sessions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     impersonatedBy: text("impersonated_by"),
-    activeOrganizationId: text("active_organization_id"),
+    activeOrganizationId: text("active_organization_id").notNull(),
   },
   (table) => [index("sessions_userId_idx").on(table.userId)],
 );
@@ -89,60 +82,6 @@ export const verifications = pgTable(
   (table) => [index("verifications_identifier_idx").on(table.identifier)],
 );
 
-export const organizations = pgTable(
-  "organizations",
-  {
-    id: text("id").primaryKey(),
-    name: text("name").notNull(),
-    slug: text("slug").notNull().unique(),
-    logo: text("logo"),
-    createdAt: timestamp("created_at").notNull(),
-    metadata: text("metadata"),
-  },
-  (table) => [uniqueIndex("organizations_slug_uidx").on(table.slug)],
-);
-
-export const members = pgTable(
-  "members",
-  {
-    id: text("id").primaryKey(),
-    organizationId: text("organization_id")
-      .notNull()
-      .references(() => organizations.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role").default("member").notNull(),
-    createdAt: timestamp("created_at").notNull(),
-  },
-  (table) => [
-    index("members_organizationId_idx").on(table.organizationId),
-    index("members_userId_idx").on(table.userId),
-  ],
-);
-
-export const invitations = pgTable(
-  "invitations",
-  {
-    id: text("id").primaryKey(),
-    organizationId: text("organization_id")
-      .notNull()
-      .references(() => organizations.id, { onDelete: "cascade" }),
-    email: text("email").notNull(),
-    role: text("role"),
-    status: text("status").default("pending").notNull(),
-    expiresAt: timestamp("expires_at").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    inviterId: text("inviter_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-  },
-  (table) => [
-    index("invitations_organizationId_idx").on(table.organizationId),
-    index("invitations_email_idx").on(table.email),
-  ],
-);
-
 export const twoFactors = pgTable(
   "two_factors",
   {
@@ -165,7 +104,19 @@ export const subscriptions = pgTable("subscriptions", {
   referenceId: text("reference_id").notNull(),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
-  status: text("status").default("incomplete"),
+  status: text("status")
+    .$type<
+      | "active"
+      | "canceled"
+      | "incomplete"
+      | "incomplete_expired"
+      | "past_due"
+      | "paused"
+      | "trialing"
+      | "unpaid"
+    >()
+    .default("incomplete")
+    .notNull(),
   periodStart: timestamp("period_start"),
   periodEnd: timestamp("period_end"),
   trialStart: timestamp("trial_start"),
@@ -175,13 +126,20 @@ export const subscriptions = pgTable("subscriptions", {
   canceledAt: timestamp("canceled_at"),
   endedAt: timestamp("ended_at"),
   seats: integer("seats"),
+  billingInterval: text("billing_interval"),
+  stripeScheduleId: text("stripe_schedule_id"),
+});
+
+export const rateLimits = pgTable("rate_limits", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull(),
+  lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
-  members: many(members),
-  invitations: many(invitations),
   twoFactors: many(twoFactors),
 }));
 
@@ -195,33 +153,6 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 export const accountsRelations = relations(accounts, ({ one }) => ({
   users: one(users, {
     fields: [accounts.userId],
-    references: [users.id],
-  }),
-}));
-
-export const organizationsRelations = relations(organizations, ({ many }) => ({
-  members: many(members),
-  invitations: many(invitations),
-}));
-
-export const membersRelations = relations(members, ({ one }) => ({
-  organizations: one(organizations, {
-    fields: [members.organizationId],
-    references: [organizations.id],
-  }),
-  users: one(users, {
-    fields: [members.userId],
-    references: [users.id],
-  }),
-}));
-
-export const invitationsRelations = relations(invitations, ({ one }) => ({
-  organizations: one(organizations, {
-    fields: [invitations.organizationId],
-    references: [organizations.id],
-  }),
-  users: one(users, {
-    fields: [invitations.inviterId],
     references: [users.id],
   }),
 }));

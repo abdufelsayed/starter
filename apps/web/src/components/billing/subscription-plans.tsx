@@ -1,11 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
+import { webEnv } from "@starter/env/web";
 import { PLANS, TRIAL_DAYS, type PlanName } from "@starter/schemas/billing";
 import { Badge } from "@starter/ui/components/badge";
-import { buttonVariants } from "@starter/ui/components/button";
+import { Button, buttonVariants } from "@starter/ui/components/button";
 import {
   Card,
   CardContent,
@@ -16,10 +18,7 @@ import {
 import { cn } from "@starter/ui/lib/utils";
 
 import { authClient } from "@/lib/auth";
-import { CancelSubscriptionButton } from "./cancel-subscription-button";
-import { ManageSubscriptionButton } from "./manage-subscription-button";
-import { RestoreSubscriptionButton } from "./restore-subscription-button";
-import { UpgradeButton } from "./upgrade-button";
+import { isActiveSubscription, isPlanName } from "./utils";
 
 const PAID_PLANS: {
   key: "pro" | "max";
@@ -31,23 +30,25 @@ const PAID_PLANS: {
 
 export function SubscriptionPlans() {
   const [annual, setAnnual] = useState(false);
-  const { data: session } = useQuery(authClient.session.get.queryOptions());
-  const { data: activeSubscription } = useQuery(
-    authClient.billing.activeSubscription.queryOptions(),
+  const { data: session } = useQuery(authClient.getSession.queryOptions());
+  const { data: subscriptions } = useQuery(
+    authClient.subscription.list.queryOptions({
+      enabled: !!session,
+    }),
   );
 
+  const activeSubscription = subscriptions?.find(isActiveSubscription) ?? null;
+  const activePlan = isPlanName(activeSubscription?.plan) ? activeSubscription.plan : undefined;
   const annualSavings = Math.round(
     ((PLANS.pro.price * 12 - PLANS.pro.annualPrice * 12) / (PLANS.pro.price * 12)) * 100,
   );
   const billingPeriod = annual ? "yr" : "mo";
 
-  const activePlan = activeSubscription?.plan as PlanName | undefined;
-
   return (
     <div className="flex w-full flex-col items-center gap-10">
-      {/* Billing toggle */}
       <div className="flex items-center gap-2 rounded-full border p-1">
         <button
+          type="button"
           onClick={() => setAnnual(false)}
           className={cn(
             "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
@@ -59,6 +60,7 @@ export function SubscriptionPlans() {
           Monthly
         </button>
         <button
+          type="button"
           onClick={() => setAnnual(true)}
           className={cn(
             "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
@@ -68,15 +70,14 @@ export function SubscriptionPlans() {
           )}
         >
           Annual
-          {annualSavings > 0 && (
+          {annualSavings > 0 ? (
             <Badge variant="secondary" className="ml-2">
               Save {annualSavings}%
             </Badge>
-          )}
+          ) : null}
         </button>
       </div>
 
-      {/* Plan cards */}
       <div className="grid w-full max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
         {/* Free card */}
         <Card className="flex flex-col gap-6">
@@ -109,7 +110,7 @@ export function SubscriptionPlans() {
               </Link>
             ) : null}
             <ul className="space-y-3 text-sm">
-              {PLANS.free.features.map((feature, i) => (
+              {PLANS.free.features.map((feature: string, i: number) => (
                 <li key={i} className="flex items-center gap-2">
                   <CheckIcon className="size-3.5 shrink-0 text-muted-foreground" />
                   {feature}
@@ -119,12 +120,11 @@ export function SubscriptionPlans() {
           </CardContent>
         </Card>
 
-        {/* Paid plan cards */}
         {PAID_PLANS.map(({ key, highlighted }) => {
           const plan = PLANS[key];
           const price = annual ? plan.annualPrice : plan.price;
           const isActive = activePlan === key;
-          const isCancelling = isActive && activeSubscription?.cancelAtPeriodEnd;
+          const isCancelling = isActive && !!activeSubscription?.cancelAtPeriodEnd;
 
           return (
             <Card
@@ -134,17 +134,17 @@ export function SubscriptionPlans() {
                 highlighted && "border-primary ring-1 ring-primary",
               )}
             >
-              {highlighted && (
+              {highlighted ? (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2">Most Popular</Badge>
-              )}
+              ) : null}
               <CardHeader>
                 <CardTitle className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium capitalize">{plan.name}</span>
-                    {isActive && <Badge variant="secondary">Current Plan</Badge>}
-                    {TRIAL_DAYS > 0 && !isActive && (
+                    {isActive ? <Badge variant="secondary">Current Plan</Badge> : null}
+                    {TRIAL_DAYS > 0 && !isActive ? (
                       <Badge variant="secondary">{TRIAL_DAYS}-day trial</Badge>
-                    )}
+                    ) : null}
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-3xl font-bold">${price}</span>
@@ -156,11 +156,12 @@ export function SubscriptionPlans() {
               <CardContent className="flex flex-1 flex-col gap-4">
                 <PlanAction
                   planKey={key}
-                  isActive={isActive}
-                  isCancelling={!!isCancelling}
-                  session={!!session}
-                  highlighted={highlighted}
                   annual={annual}
+                  currentSubscriptionId={activeSubscription?.stripeSubscriptionId ?? undefined}
+                  highlighted={highlighted}
+                  isActive={isActive}
+                  isCancelling={isCancelling}
+                  session={!!session}
                 />
                 <ul className="space-y-3 text-sm">
                   {plan.features.map((feature, i) => (
@@ -180,21 +181,70 @@ export function SubscriptionPlans() {
 }
 
 function PlanAction({
+  annual,
+  currentSubscriptionId,
+  highlighted,
   planKey,
   isActive,
   isCancelling,
   session,
-  highlighted,
-  annual,
 }: {
+  annual: boolean;
+  currentSubscriptionId?: string;
+  highlighted: boolean;
   planKey: PlanName;
   isActive: boolean;
   isCancelling: boolean;
   session: boolean;
-  highlighted: boolean;
-  annual: boolean;
 }) {
+  const queryClient = useQueryClient();
   const variant = highlighted ? "default" : "outline";
+
+  const upgrade = useMutation(
+    authClient.subscription.upgrade.mutationOptions({
+      onError: (error) => {
+        toast.error("Error upgrading subscription", {
+          description: error.message,
+        });
+      },
+    }),
+  );
+
+  const cancel = useMutation(
+    authClient.subscription.cancel.mutationOptions({
+      onError: (error) => {
+        toast.error("Error cancelling subscription", {
+          description: error.message,
+        });
+      },
+    }),
+  );
+
+  const restore = useMutation(
+    authClient.subscription.restore.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: authClient.subscription.list.key(),
+        });
+        toast.success("Subscription restored");
+      },
+      onError: (error) => {
+        toast.error("Error restoring subscription", {
+          description: error.message,
+        });
+      },
+    }),
+  );
+
+  const portal = useMutation(
+    authClient.subscription.billingPortal.mutationOptions({
+      onError: (error) => {
+        toast.error("Error opening billing portal", {
+          description: error.message,
+        });
+      },
+    }),
+  );
 
   if (!session) {
     return (
@@ -205,25 +255,72 @@ function PlanAction({
   }
 
   if (isActive && isCancelling) {
-    return <RestoreSubscriptionButton className="w-full" />;
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full"
+        disabled={restore.isPending}
+        onClick={() =>
+          restore.mutate(currentSubscriptionId ? { subscriptionId: currentSubscriptionId } : {})
+        }
+      >
+        {restore.isPending && <LoaderIcon className="mr-1 size-3 animate-spin" />}
+        Restore Subscription
+      </Button>
+    );
   }
 
   if (isActive) {
     return (
       <div className="flex flex-col gap-2">
-        <ManageSubscriptionButton className="w-full" />
-        <CancelSubscriptionButton className="w-full" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          disabled={portal.isPending}
+          onClick={() => portal.mutate({ returnUrl: `${webEnv.VITE_WEB_URL}/pricing` })}
+        >
+          {portal.isPending && <LoaderIcon className="mr-1 size-3 animate-spin" />}
+          Manage Subscription
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          disabled={cancel.isPending}
+          onClick={() =>
+            cancel.mutate({
+              returnUrl: `${webEnv.VITE_WEB_URL}/pricing`,
+              ...(currentSubscriptionId ? { subscriptionId: currentSubscriptionId } : {}),
+            })
+          }
+        >
+          {cancel.isPending && <LoaderIcon className="mr-1 size-3 animate-spin" />}
+          Cancel Subscription
+        </Button>
       </div>
     );
   }
 
   return (
-    <UpgradeButton
-      plan={planKey}
-      annual={annual}
-      className={cn(buttonVariants({ variant, size: "sm" }), "w-full")}
+    <Button
+      variant={variant}
+      size="sm"
+      className="w-full"
+      disabled={upgrade.isPending}
+      onClick={() =>
+        upgrade.mutate({
+          annual,
+          ...(currentSubscriptionId ? { subscriptionId: currentSubscriptionId } : {}),
+          cancelUrl: `${webEnv.VITE_WEB_URL}/pricing`,
+          plan: planKey,
+          successUrl: `${webEnv.VITE_WEB_URL}/dashboard`,
+        })
+      }
     >
+      {upgrade.isPending && <LoaderIcon className="mr-1 size-3 animate-spin" />}
       Start Free Trial
-    </UpgradeButton>
+    </Button>
   );
 }

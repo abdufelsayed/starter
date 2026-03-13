@@ -8,7 +8,7 @@ import { z } from "zod";
 import { Button } from "@starter/ui/components/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@starter/ui/components/card";
 import { Checkbox } from "@starter/ui/components/checkbox";
-import { Field, FieldLabel } from "@starter/ui/components/field";
+import { Field, FieldGroup, FieldLabel } from "@starter/ui/components/field";
 import { Input } from "@starter/ui/components/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@starter/ui/components/input-otp";
 
@@ -20,8 +20,8 @@ const verify2faSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth/verify-2fa")({
-  validateSearch: verify2faSearchSchema,
   component: VerifyTwoFactorPage,
+  validateSearch: verify2faSearchSchema,
 });
 
 type VerifyMethod = "totp" | "email-otp" | "backup-code";
@@ -37,45 +37,45 @@ function VerifyTwoFactorPage() {
 
   const queryClient = useQueryClient();
   const verifyTOTP = useMutation(
-    authClient.twoFactor.verifyTOTP.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
-      },
+    authClient.twoFactor.verifyTotp.mutationOptions({
       onError: (error) => {
-        toast.error("Invalid code", { description: error.message });
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
       },
     }),
   );
 
   const sendOTP = useMutation(
-    authClient.twoFactor.sendOTP.mutationOptions({
+    authClient.twoFactor.sendOtp.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
       onSuccess: () => {
         toast.success("Code sent", { description: "Check your email for the verification code." });
-      },
-      onError: (error) => {
-        toast.error("Failed to send code", { description: error.message });
       },
     }),
   );
 
   const verifyOTP = useMutation(
-    authClient.twoFactor.verifyOTP.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
-      },
+    authClient.twoFactor.verifyOtp.mutationOptions({
       onError: (error) => {
-        toast.error("Invalid code", { description: error.message });
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
       },
     }),
   );
 
   const verifyBackup = useMutation(
     authClient.twoFactor.verifyBackupCode.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
-      },
       onError: (error) => {
-        toast.error("Invalid backup code", { description: error.message });
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
       },
     }),
   );
@@ -105,7 +105,7 @@ function VerifyTwoFactorPage() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {method === "totp" && (
-          <div className="space-y-4">
+          <FieldGroup>
             <div className="flex justify-center">
               <InputOTP
                 maxLength={6}
@@ -146,11 +146,11 @@ function VerifyTwoFactorPage() {
               {verifyTOTP.isPending && <LoaderIcon className="mr-2 size-4 animate-spin" />}
               Verify
             </Button>
-          </div>
+          </FieldGroup>
         )}
 
         {method === "email-otp" && (
-          <div className="space-y-4">
+          <FieldGroup>
             <Button
               variant="outline"
               className="w-full"
@@ -201,11 +201,11 @@ function VerifyTwoFactorPage() {
               {verifyOTP.isPending && <LoaderIcon className="mr-2 size-4 animate-spin" />}
               Verify
             </Button>
-          </div>
+          </FieldGroup>
         )}
 
         {method === "backup-code" && (
-          <div className="space-y-4">
+          <FieldGroup>
             <Field>
               <FieldLabel htmlFor="backup-code">Backup code</FieldLabel>
               <Input
@@ -216,11 +216,12 @@ function VerifyTwoFactorPage() {
                 onChange={(e) => setBackupCode(e.target.value)}
                 disabled={isPending}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && backupCode)
+                  if (e.key === "Enter" && backupCode) {
                     verifyBackup.mutate(
                       { code: backupCode },
                       { onSuccess: () => navigate({ to: redirectUrl ?? "/" }) },
                     );
+                  }
                 }}
               />
             </Field>
@@ -237,7 +238,7 @@ function VerifyTwoFactorPage() {
               {verifyBackup.isPending && <LoaderIcon className="mr-2 size-4 animate-spin" />}
               Verify
             </Button>
-          </div>
+          </FieldGroup>
         )}
 
         <div className="flex flex-col gap-1 pt-2">

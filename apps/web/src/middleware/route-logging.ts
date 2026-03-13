@@ -14,16 +14,36 @@ function safeHeaders(headers: Record<string, string | undefined>): Record<string
   return safe;
 }
 
+function toHeaderRecord(headers: unknown): Record<string, string | undefined> {
+  if (headers instanceof Headers) {
+    return Object.fromEntries(headers.entries());
+  }
+
+  if (typeof headers !== "object" || headers === null) {
+    return {};
+  }
+
+  const record: Record<string, string | undefined> = {};
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (typeof value === "string" || value === undefined) {
+      record[key] = value;
+    }
+  }
+
+  return record;
+}
+
 export const routeLoggingMiddleware = createMiddleware({ type: "request" }).server(
   async ({ next, request, pathname }) => {
     const url = new URL(request.url);
-    const reqHeaders = getRequestHeaders();
+    const reqHeaders = toHeaderRecord(getRequestHeaders());
 
     const req = {
       method: request.method,
       url: url.pathname + url.search,
       route: pathname,
-      headers: safeHeaders(reqHeaders as Record<string, string | undefined>),
+      headers: safeHeaders(reqHeaders),
       remoteAddress: reqHeaders["x-forwarded-for"] ?? reqHeaders["x-real-ip"],
       userAgent: reqHeaders["user-agent"],
       contentType: reqHeaders["content-type"],
@@ -39,12 +59,12 @@ export const routeLoggingMiddleware = createMiddleware({ type: "request" }).serv
     try {
       const result = await next();
       const responseTime = Math.round(performance.now() - start);
-      const resHeaders = getResponseHeaders();
+      const resHeaders = toHeaderRecord(getResponseHeaders());
       const statusCode = result.response.status;
 
       const res = {
         statusCode,
-        headers: safeHeaders(resHeaders as Record<string, string | undefined>),
+        headers: safeHeaders(resHeaders),
         contentLength: resHeaders["content-length"]
           ? Number(resHeaders["content-length"])
           : undefined,

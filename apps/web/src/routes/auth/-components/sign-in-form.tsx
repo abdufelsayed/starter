@@ -5,7 +5,8 @@ import { AtSignIcon, EyeIcon, EyeOffIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { magicLinkSchema, signInSchema } from "@starter/schemas/auth";
+import { webEnv } from "@starter/env/web";
+import { magicLinkSignInSchema, signInSchema } from "@starter/schemas/auth";
 import { Badge } from "@starter/ui/components/badge";
 import { Button } from "@starter/ui/components/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@starter/ui/components/card";
@@ -26,27 +27,26 @@ export function SignInForm({ className }: { className?: string }) {
   const [showPasswordMethod, setShowPasswordMethod] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const queryClient = useQueryClient();
+
   const signIn = useMutation(
-    authClient.session.signInEmail.mutationOptions({
-      onSuccess: (data) => {
-        if (!data.redirect) {
-          queryClient.invalidateQueries({ queryKey: authClient.session.key() });
-        }
-      },
+    authClient.signIn.email.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to sign in", { description: error.message });
+        toast.error(error.message);
+      },
+      onSuccess: async (data) => {
+        if (!data) return;
+
+        if (!data.redirect) {
+          await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
+        }
       },
     }),
   );
+
   const signInMagicLink = useMutation(
-    authClient.session.signInMagicLink.mutationOptions({
-      onSuccess: () => {
-        toast.success("Magic link sent", {
-          description: "Check your email for the sign-in link.",
-        });
-      },
+    authClient.signIn.magicLink.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to send magic link", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
@@ -55,24 +55,25 @@ export function SignInForm({ className }: { className?: string }) {
     defaultValues: {
       email: "",
     },
-    validators: {
-      onChange: magicLinkSchema,
-    },
     onSubmit: async ({ value }) => {
       await signInMagicLink.mutateAsync(
         {
           email: value.email,
-          callbackURL: search.redirect ?? "/",
+          callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
+          errorCallbackURL: `${webEnv.VITE_WEB_URL}/auth/error`,
         },
         {
-          onSuccess: () => {
-            navigate({
+          onSuccess: async () => {
+            await navigate({
               to: "/auth/magic-link-sent",
               search: { email: value.email },
             });
           },
         },
       );
+    },
+    validators: {
+      onChange: magicLinkSignInSchema,
     },
   });
 
@@ -82,21 +83,20 @@ export function SignInForm({ className }: { className?: string }) {
       password: "",
       rememberMe: false,
     },
-    validators: {
-      onChange: signInSchema,
-    },
     onSubmit: async ({ value }) => {
       await signIn.mutateAsync(
         {
           email: value.email,
           password: value.password,
           rememberMe: value.rememberMe,
-          callbackURL: search.redirect ?? "/",
+          callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
         },
         {
-          onSuccess: (data) => {
+          onSuccess: async (data) => {
+            if (!data) return;
+
             if (data.redirect) {
-              navigate({
+              await navigate({
                 to: "/auth/verify-2fa",
                 search: { redirect: search.redirect },
               });
@@ -105,19 +105,22 @@ export function SignInForm({ className }: { className?: string }) {
         },
       );
     },
+    validators: {
+      onChange: signInSchema,
+    },
   });
 
   return (
     <Shell className={className}>
       <CardHeader className="flex flex-col items-start justify-start">
         <CardTitle className="flex flex-col gap-4">
-          <img src="/logo192.png" className="size-10" />
+          <img src="/logo192.png" alt="Logo" className="size-10" />
           <span className="text-xl">Sign in to Starter</span>
         </CardTitle>
         <CardDescription>Welcome back! Please sign in to continue</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <Socials disabled={magicLinkForm.state.isSubmitting || passwordForm.state.isSubmitting} />
+        <Socials disabled={signInMagicLink.isPending || signIn.isPending} />
         {showPasswordMethod && (
           <Button
             variant="default"
@@ -141,13 +144,12 @@ export function SignInForm({ className }: { className?: string }) {
         <Separator />
         {showPasswordMethod ? (
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              passwordForm.handleSubmit();
+              await passwordForm.handleSubmit();
             }}
-            className="space-y-4"
           >
-            <fieldset disabled={passwordForm.state.isSubmitting} className="space-y-4">
+            <fieldset disabled={signIn.isPending}>
               <FieldGroup>
                 <passwordForm.Field name="email">
                   {(field) => {
@@ -239,29 +241,35 @@ export function SignInForm({ className }: { className?: string }) {
                     );
                   }}
                 </passwordForm.Field>
+                <passwordForm.Subscribe selector={(state) => state.canSubmit}>
+                  {(canSubmit) => (
+                    <Button
+                      variant="outline"
+                      className="relative w-full"
+                      type="submit"
+                      disabled={!canSubmit}
+                    >
+                      {signIn.isPending && <LoaderIcon className="mr-1 size-3 animate-spin" />}
+                      Sign in
+                      {lastUsedLoginMethod === "email" && (
+                        <Badge variant="outline" className="absolute right-2">
+                          Last used
+                        </Badge>
+                      )}
+                    </Button>
+                  )}
+                </passwordForm.Subscribe>
               </FieldGroup>
-              <Button variant="outline" className="relative w-full" type="submit">
-                {passwordForm.state.isSubmitting && (
-                  <LoaderIcon className="mr-1 size-3 animate-spin" />
-                )}
-                Sign in
-                {lastUsedLoginMethod === "email" && (
-                  <Badge variant="outline" className="absolute right-2">
-                    Last used
-                  </Badge>
-                )}
-              </Button>
             </fieldset>
           </form>
         ) : (
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              magicLinkForm.handleSubmit();
+              await magicLinkForm.handleSubmit();
             }}
-            className="space-y-4"
           >
-            <fieldset disabled={magicLinkForm.state.isSubmitting} className="space-y-4">
+            <fieldset disabled={signInMagicLink.isPending}>
               <FieldGroup>
                 <magicLinkForm.Field name="email">
                   {(field) => {
@@ -286,18 +294,22 @@ export function SignInForm({ className }: { className?: string }) {
                     );
                   }}
                 </magicLinkForm.Field>
+                <magicLinkForm.Subscribe selector={(state) => state.canSubmit}>
+                  {(canSubmit) => (
+                    <Button className="relative w-full" type="submit" disabled={!canSubmit}>
+                      {signInMagicLink.isPending && (
+                        <LoaderIcon className="mr-1 size-3 animate-spin" />
+                      )}
+                      Continue
+                      {lastUsedLoginMethod === "magic_link" && (
+                        <Badge variant="outline" className="absolute right-2">
+                          Last used
+                        </Badge>
+                      )}
+                    </Button>
+                  )}
+                </magicLinkForm.Subscribe>
               </FieldGroup>
-              <Button className="relative w-full" type="submit">
-                {magicLinkForm.state.isSubmitting && (
-                  <LoaderIcon className="mr-1 size-3 animate-spin" />
-                )}
-                Continue
-                {lastUsedLoginMethod === "magic_link" && (
-                  <Badge variant="outline" className="absolute right-2">
-                    Last used
-                  </Badge>
-                )}
-              </Button>
             </fieldset>
           </form>
         )}
@@ -309,13 +321,14 @@ export function SignInForm({ className }: { className?: string }) {
             </Link>
           </div>
           {!showPasswordMethod && (
-            <button
-              type="button"
+            <Button
+              variant="link"
+              size="xs"
               onClick={() => setShowPasswordMethod(true)}
-              className="text-muted-foreground hover:text-foreground hover:underline"
+              className="text-muted-foreground hover:text-foreground"
             >
               Use password instead
-            </button>
+            </Button>
           )}
         </div>
         <SupportLinks />

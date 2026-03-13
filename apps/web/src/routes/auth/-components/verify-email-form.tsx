@@ -8,10 +8,10 @@ import { cn } from "@starter/ui/lib/utils";
 import { Shell } from "./shell";
 import { SupportLinks } from "./support-links";
 
-type VerifyEmailFormProps = {
+interface VerifyEmailFormProps {
   className?: string;
   email?: string | null;
-};
+}
 
 export function VerifyEmailForm({ className, email }: VerifyEmailFormProps) {
   return (

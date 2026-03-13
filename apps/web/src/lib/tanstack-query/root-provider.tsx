@@ -6,13 +6,6 @@ const serializer = new StandardRPCJsonSerializer();
 export function getContext() {
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: {
-        queryKeyHashFn(queryKey) {
-          const [json, meta] = serializer.serialize(queryKey);
-          return JSON.stringify({ json, meta });
-        },
-        staleTime: 60 * 1000,
-      },
       dehydrate: {
         serializeData(data) {
           const [json, meta] = serializer.serialize(data);
@@ -23,6 +16,13 @@ export function getContext() {
         deserializeData(data) {
           return serializer.deserialize(data.json, data.meta);
         },
+      },
+      queries: {
+        queryKeyHashFn(queryKey) {
+          const [json, meta] = serializer.serialize(queryKey);
+          return JSON.stringify({ json, meta });
+        },
+        staleTime: 60 * 1000,
       },
     },
   });

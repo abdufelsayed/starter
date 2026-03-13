@@ -11,6 +11,14 @@ import { LLMCopyButton, ViewOptions } from "@/components/ai/page-actions";
 import { baseOptions, gitConfig } from "@/lib/layout.shared";
 import { source } from "@/lib/source";
 
+type DocsContent = Awaited<
+  ReturnType<(typeof browserCollections.docs.raw)[keyof typeof browserCollections.docs.raw]>
+>;
+type DocsFrontmatter = {
+  title?: string;
+  description?: string;
+};
+
 export const Route = createFileRoute("/docs/$")({
   component: Page,
   loader: async ({ params }) => {
@@ -38,7 +46,7 @@ const serverLoader = createServerFn({
 
 const clientLoader = browserCollections.docs.createClientLoader({
   component(
-    { toc, frontmatter, default: MDX },
+    { toc, frontmatter, default: MDX }: DocsContent,
     // you can define props for the component
     {
       url,
@@ -48,10 +56,12 @@ const clientLoader = browserCollections.docs.createClientLoader({
       path: string;
     },
   ) {
+    const typedFrontmatter = frontmatter as DocsFrontmatter;
+
     return (
       <DocsPage toc={toc}>
-        <DocsTitle>{frontmatter.title}</DocsTitle>
-        <DocsDescription>{frontmatter.description}</DocsDescription>
+        <DocsTitle>{typedFrontmatter.title}</DocsTitle>
+        <DocsDescription>{typedFrontmatter.description}</DocsDescription>
         <div className="-mt-4 flex flex-row items-center gap-2 border-b pb-6">
           <LLMCopyButton markdownUrl={`${url}.mdx`} />
           <ViewOptions

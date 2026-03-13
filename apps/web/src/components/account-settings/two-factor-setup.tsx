@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import {
+  ArrowRightIcon,
   CheckIcon,
   CopyIcon,
   DownloadIcon,
@@ -24,14 +25,8 @@ import {
 } from "@starter/ui/components/alert-dialog";
 import { Badge } from "@starter/ui/components/badge";
 import { Button } from "@starter/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@starter/ui/components/card";
-import { Field, FieldLabel } from "@starter/ui/components/field";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@starter/ui/components/card";
+import { Field, FieldDescription, FieldLabel, FieldTitle } from "@starter/ui/components/field";
 import { Input } from "@starter/ui/components/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@starter/ui/components/input-otp";
 
@@ -39,10 +34,10 @@ import { authClient } from "@/lib/auth";
 
 type SetupStep = "idle" | "password" | "qr" | "backup-codes";
 
-export function TwoFactorSetup() {
-  const { data: session } = useQuery(authClient.session.get.queryOptions());
+export function TwoFactorSetup({ onBack }: { onBack?: () => void }) {
+  const { data: session } = useSuspenseQuery(authClient.getSession.queryOptions());
   const queryClient = useQueryClient();
-  const twoFactorEnabled = session?.user?.twoFactorEnabled ?? false;
+  const twoFactorEnabled = session?.user.twoFactorEnabled;
 
   const [step, setStep] = useState<SetupStep>("idle");
   const [password, setPassword] = useState("");
@@ -56,30 +51,30 @@ export function TwoFactorSetup() {
   const enableTwoFactor = useMutation(
     authClient.twoFactor.enable.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to enable 2FA", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
 
   const disableTwoFactor = useMutation(
     authClient.twoFactor.disable.mutationOptions({
-      onSuccess: () => {
-        toast.success("Two-factor authentication disabled");
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
-      },
       onError: (error) => {
-        toast.error("Failed to disable 2FA", { description: error.message });
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Two-factor authentication disabled");
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
       },
     }),
   );
 
   const verifyTOTP = useMutation(
-    authClient.twoFactor.verifyTOTP.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
-      },
+    authClient.twoFactor.verifyTotp.mutationOptions({
       onError: (error) => {
-        toast.error("Invalid code", { description: error.message });
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
       },
     }),
   );
@@ -87,7 +82,7 @@ export function TwoFactorSetup() {
   const generateBackupCodes = useMutation(
     authClient.twoFactor.generateBackupCodes.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to generate backup codes", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
@@ -101,8 +96,8 @@ export function TwoFactorSetup() {
     setCopied(false);
   };
 
-  const copyBackupCodes = () => {
-    navigator.clipboard.writeText(backupCodes.join("\n"));
+  const copyBackupCodes = async () => {
+    await navigator.clipboard.writeText(backupCodes.join("\n"));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -119,21 +114,29 @@ export function TwoFactorSetup() {
 
   const manualKey = totpURI ? (new URL(totpURI).searchParams.get("secret") ?? "") : "";
 
+  // 2FA is enabled — show status + disable/regenerate actions
   if (twoFactorEnabled && step === "idle") {
     return (
-      <Card>
+      <Card className="rounded-xl shadow-none ring-0">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Two-Factor Authentication
+          <CardTitle>Two-Factor Authentication</CardTitle>
+          {onBack ? (
+            <CardAction>
+              <Button variant="ghost" size="icon" onClick={onBack}>
+                <ArrowRightIcon className="size-3.5" />
+              </Button>
+            </CardAction>
+          ) : null}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <FieldDescription>
+              Your account is protected with two-factor authentication.
+            </FieldDescription>
             <Badge variant="default" className="bg-green-600 hover:bg-green-600">
               Enabled
             </Badge>
-          </CardTitle>
-          <CardDescription>
-            Your account is protected with two-factor authentication.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </div>
           <div className="flex flex-wrap gap-2">
             <AlertDialog>
               <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
@@ -159,7 +162,11 @@ export function TwoFactorSetup() {
                   />
                 </Field>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setDisablePassword("")}>
+                  <AlertDialogCancel
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setDisablePassword("")}
+                  >
                     Cancel
                   </AlertDialogCancel>
                   <AlertDialogAction
@@ -209,7 +216,13 @@ export function TwoFactorSetup() {
                   />
                 </Field>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setRegenPassword("")}>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRegenPassword("")}
+                  >
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     disabled={!regenPassword || generateBackupCodes.isPending}
                     onClick={(e) => {
@@ -218,6 +231,9 @@ export function TwoFactorSetup() {
                         { password: regenPassword },
                         {
                           onSuccess: (data) => {
+                            if (!data) {
+                              return;
+                            }
                             setBackupCodes(data.backupCodes);
                             setStep("backup-codes");
                             setRegenPassword("");
@@ -240,11 +256,21 @@ export function TwoFactorSetup() {
     );
   }
 
+  // 2FA setup flow
   return (
-    <Card>
+    <Card className="rounded-xl shadow-none ring-0">
       <CardHeader>
         <CardTitle>Two-Factor Authentication</CardTitle>
-        <CardDescription>
+        {onBack ? (
+          <CardAction>
+            <Button variant="ghost" size="icon" onClick={onBack}>
+              <ArrowRightIcon className="size-3.5" />
+            </Button>
+          </CardAction>
+        ) : null}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <FieldDescription>
           {step === "idle" &&
             "Add an extra layer of security to your account by enabling two-factor authentication."}
           {step === "password" && "Enter your password to enable two-factor authentication."}
@@ -252,9 +278,8 @@ export function TwoFactorSetup() {
             "Scan the QR code with your authenticator app, then enter the code to verify."}
           {step === "backup-codes" &&
             "Save these backup codes in a safe place. You can use them to access your account if you lose your authenticator."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </FieldDescription>
+
         {step === "idle" && (
           <Button size="sm" onClick={() => setStep("password")}>
             <ShieldCheckIcon className="mr-2 size-4" />
@@ -273,11 +298,12 @@ export function TwoFactorSetup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && password)
+                  if (e.key === "Enter" && password) {
                     enableTwoFactor.mutate(
                       { password },
                       {
                         onSuccess: (data) => {
+                          if (!data) return;
                           setTotpURI(data.totpURI);
                           setBackupCodes(data.backupCodes);
                           setStep("qr");
@@ -285,6 +311,7 @@ export function TwoFactorSetup() {
                         },
                       },
                     );
+                  }
                 }}
               />
             </Field>
@@ -297,6 +324,9 @@ export function TwoFactorSetup() {
                     { password },
                     {
                       onSuccess: (data) => {
+                        if (!data) {
+                          return;
+                        }
                         setTotpURI(data.totpURI);
                         setBackupCodes(data.backupCodes);
                         setStep("qr");
@@ -317,38 +347,30 @@ export function TwoFactorSetup() {
         )}
 
         {step === "qr" && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="flex flex-col items-center gap-4">
-              <div className="rounded-lg bg-white p-4">
-                <QRCode value={totpURI} size={180} />
+              <div className="rounded-lg bg-white p-3">
+                <QRCode value={totpURI} size={160} />
               </div>
               <div className="w-full space-y-1">
-                <p className="text-xs text-muted-foreground">
-                  Can't scan? Enter this key manually:
-                </p>
+                <FieldDescription>Can't scan? Enter this key manually:</FieldDescription>
                 <code className="block rounded bg-muted px-3 py-2 text-xs break-all">
                   {manualKey}
                 </code>
               </div>
             </div>
             <div className="space-y-2">
-              <FieldLabel>Enter the 6-digit code from your authenticator app</FieldLabel>
-              <div className="flex items-center gap-3">
-                <InputOTP
-                  maxLength={6}
-                  value={verifyCode}
-                  onChange={(value) => setVerifyCode(value)}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
+              <FieldTitle>Enter the 6-digit code from your authenticator app</FieldTitle>
+              <InputOTP maxLength={6} value={verifyCode} onChange={(value) => setVerifyCode(value)}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
             <div className="flex gap-2">
               <Button
@@ -358,10 +380,12 @@ export function TwoFactorSetup() {
                   verifyTOTP.mutate(
                     { code: verifyCode },
                     {
-                      onSuccess: () => {
+                      onSuccess: async () => {
                         setStep("backup-codes");
                         setVerifyCode("");
-                        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
+                        await queryClient.invalidateQueries({
+                          queryKey: authClient.getSession.key(),
+                        });
                       },
                     },
                   )
@@ -379,7 +403,7 @@ export function TwoFactorSetup() {
 
         {step === "backup-codes" && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2 rounded-lg border p-4">
+            <div className="grid grid-cols-2 gap-2 rounded-lg border p-3">
               {backupCodes.map((code) => (
                 <code key={code} className="font-mono text-sm">
                   {code}

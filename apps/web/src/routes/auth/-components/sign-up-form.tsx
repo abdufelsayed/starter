@@ -3,9 +3,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { AtSignIcon, EyeIcon, EyeOffIcon, LoaderIcon, MailIcon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "sonner"; // Kept for onSuccess toasts
 
-import { magicLinkSchema, signUpSchema } from "@starter/schemas/auth";
+import { webEnv } from "@starter/env/web";
+import { magicLinkSignUpSchema, signUpSchema } from "@starter/schemas/auth";
 import { Button } from "@starter/ui/components/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@starter/ui/components/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@starter/ui/components/field";
@@ -27,41 +28,37 @@ export function SignUpForm({ className }: { className?: string }) {
   const queryClient = useQueryClient();
 
   const signUp = useMutation(
-    authClient.session.signUpEmail.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
-      },
+    authClient.signUp.email.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to sign up", { description: error.message });
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
       },
     }),
   );
 
   const signInMagicLink = useMutation(
-    authClient.session.signInMagicLink.mutationOptions({
-      onSuccess: () => {
-        toast.success("Magic link sent", {
-          description: "Check your email for the sign-in link.",
-        });
-      },
+    authClient.signIn.magicLink.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to send magic link", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
 
   const magicLinkForm = useForm({
     defaultValues: {
+      firstName: "",
+      lastName: "",
       email: "",
-    },
-    validators: {
-      onChange: magicLinkSchema,
     },
     onSubmit: async ({ value }) => {
       await signInMagicLink.mutateAsync(
         {
           email: value.email,
-          callbackURL: search.redirect ?? "/",
+          name: `${value.firstName} ${value.lastName}`,
+          callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
+          errorCallbackURL: `${webEnv.VITE_WEB_URL}/auth/error`,
         },
         {
           onSuccess: () => {
@@ -69,6 +66,9 @@ export function SignUpForm({ className }: { className?: string }) {
           },
         },
       );
+    },
+    validators: {
+      onChange: magicLinkSignUpSchema,
     },
   });
 
@@ -80,23 +80,26 @@ export function SignUpForm({ className }: { className?: string }) {
       password: "",
       confirmPassword: "",
     },
-    validators: {
-      onChange: signUpSchema,
-    },
     onSubmit: async ({ value }) => {
       await signUp.mutateAsync(
         {
           name: `${value.firstName} ${value.lastName}`,
           email: value.email,
           password: value.password,
-          callbackURL: search.redirect ?? "/",
+          callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
         },
         {
-          onSuccess: () => {
-            navigate({ to: "/" });
+          onSuccess: async () => {
+            toast.success("Account created", {
+              description: "Please check your email to verify your account.",
+            });
+            await navigate({ to: "/auth/sign-in" });
           },
         },
       );
+    },
+    validators: {
+      onChange: signUpSchema,
     },
   });
 
@@ -136,13 +139,13 @@ export function SignUpForm({ className }: { className?: string }) {
     <Shell className={className}>
       <CardHeader className="flex flex-col items-start justify-start">
         <CardTitle className="flex flex-col gap-4">
-          <img src="/logo192.png" className="size-10" />
+          <img src="/logo192.png" alt="Logo" className="size-10" />
           <span className="text-xl">Sign up to Starter</span>
         </CardTitle>
         <CardDescription>Welcome! Please fill in the details to get started.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <Socials disabled={magicLinkForm.state.isSubmitting || passwordForm.state.isSubmitting} />
+        <Socials disabled={signInMagicLink.isPending || signUp.isPending} />
         {showPasswordMethod && (
           <Button
             variant="default"
@@ -158,13 +161,14 @@ export function SignUpForm({ className }: { className?: string }) {
         <Separator />
         {showPasswordMethod ? (
           <form
-            onSubmit={(e) => {
+            key="password"
+            onSubmit={async (e) => {
               e.preventDefault();
-              passwordForm.handleSubmit();
+              await passwordForm.handleSubmit();
             }}
             className="space-y-4"
           >
-            <fieldset disabled={passwordForm.state.isSubmitting} className="space-y-4">
+            <fieldset disabled={signUp.isPending} className="space-y-4">
               <FieldGroup>
                 <div className="flex flex-col gap-4 md:flex-row md:gap-2">
                   <passwordForm.Field name="firstName">
@@ -304,24 +308,69 @@ export function SignUpForm({ className }: { className?: string }) {
                   }}
                 </passwordForm.Field>
               </FieldGroup>
-              <Button variant="outline" className="w-full" type="submit">
-                {passwordForm.state.isSubmitting && (
-                  <LoaderIcon className="mr-1 size-3 animate-spin" />
+              <passwordForm.Subscribe selector={(state) => state.canSubmit}>
+                {(canSubmit) => (
+                  <Button variant="outline" className="w-full" type="submit" disabled={!canSubmit}>
+                    {signUp.isPending && <LoaderIcon className="mr-1 size-3 animate-spin" />}
+                    Sign up
+                  </Button>
                 )}
-                Sign up
-              </Button>
+              </passwordForm.Subscribe>
             </fieldset>
           </form>
         ) : (
           <form
-            onSubmit={(e) => {
+            key="magic-link"
+            onSubmit={async (e) => {
               e.preventDefault();
-              magicLinkForm.handleSubmit();
+              await magicLinkForm.handleSubmit();
             }}
             className="space-y-4"
           >
-            <fieldset disabled={magicLinkForm.state.isSubmitting} className="space-y-4">
+            <fieldset disabled={signInMagicLink.isPending} className="space-y-4">
               <FieldGroup>
+                <div className="flex flex-col gap-4 md:flex-row md:gap-2">
+                  <magicLinkForm.Field name="firstName">
+                    {(field) => {
+                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                      return (
+                        <Field data-invalid={isInvalid} className="size-full">
+                          <FieldLabel htmlFor={field.name}>First name</FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            placeholder="Your first name"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                          />
+                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        </Field>
+                      );
+                    }}
+                  </magicLinkForm.Field>
+                  <magicLinkForm.Field name="lastName">
+                    {(field) => {
+                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                      return (
+                        <Field data-invalid={isInvalid} className="size-full">
+                          <FieldLabel htmlFor={field.name}>Last name</FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            placeholder="Your last name"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                          />
+                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        </Field>
+                      );
+                    }}
+                  </magicLinkForm.Field>
+                </div>
                 <magicLinkForm.Field name="email">
                   {(field) => {
                     const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
@@ -346,12 +395,16 @@ export function SignUpForm({ className }: { className?: string }) {
                   }}
                 </magicLinkForm.Field>
               </FieldGroup>
-              <Button className="w-full" type="submit">
-                {magicLinkForm.state.isSubmitting && (
-                  <LoaderIcon className="mr-1 size-3 animate-spin" />
+              <magicLinkForm.Subscribe selector={(state) => state.canSubmit}>
+                {(canSubmit) => (
+                  <Button className="w-full" type="submit" disabled={!canSubmit}>
+                    {signInMagicLink.isPending && (
+                      <LoaderIcon className="mr-1 size-3 animate-spin" />
+                    )}
+                    Continue
+                  </Button>
                 )}
-                Continue
-              </Button>
+              </magicLinkForm.Subscribe>
             </fieldset>
           </form>
         )}
@@ -363,13 +416,14 @@ export function SignUpForm({ className }: { className?: string }) {
             </Link>
           </div>
           {!showPasswordMethod && (
-            <button
-              type="button"
+            <Button
+              variant="link"
+              size="xs"
               onClick={() => setShowPasswordMethod(true)}
-              className="text-muted-foreground hover:text-foreground hover:underline"
+              className="text-muted-foreground hover:text-foreground"
             >
               Use password instead
-            </button>
+            </Button>
           )}
         </div>
         <SupportLinks />

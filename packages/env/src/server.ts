@@ -5,6 +5,11 @@ import { z } from "zod";
 import { onValidationError, sharedEnv } from "./shared";
 
 export const serverEnv = createEnv({
+  emptyStringAsUndefined: true,
+
+  extends: [sharedEnv, fly()],
+  onValidationError,
+  runtimeEnv: process.env,
   server: {
     // Server config
     PORT: z.string().default("8080"),
@@ -34,6 +39,9 @@ export const serverEnv = createEnv({
     // Email
     RESEND_API_KEY: z.string().min(1),
 
+    // Better Auth
+    BETTER_AUTH_SECRET: z.string().min(1),
+
     // Payments
     STRIPE_SECRET_KEY: z.string().min(1),
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
@@ -42,10 +50,5 @@ export const serverEnv = createEnv({
     STRIPE_MAX_PRICE_ID: z.string().min(1),
     STRIPE_MAX_ANNUAL_PRICE_ID: z.string().min(1),
   },
-
-  extends: [sharedEnv, fly()],
-  onValidationError,
-  runtimeEnv: process.env,
-  emptyStringAsUndefined: true,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION || !!process.env.CI,
 });

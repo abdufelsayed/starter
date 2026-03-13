@@ -34,7 +34,13 @@ export const signUpSchema = withPasswordConfirmation(
   }),
 );
 
-export const magicLinkSchema = z.object({
+export const magicLinkSignInSchema = z.object({
+  email: z.email("Valid email is required"),
+});
+
+export const magicLinkSignUpSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   email: z.email("Valid email is required"),
 });
 
@@ -48,3 +54,9 @@ export const resetPasswordSchema = withPasswordConfirmation(
     confirmPassword: z.string(),
   }),
 );
+
+const organizationIdSchema = z.string().min(1, "Organization is required");
+
+export const setDefaultOrganizationSchema = z.object({
+  organizationId: organizationIdSchema,
+});

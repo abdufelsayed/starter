@@ -6,9 +6,9 @@ import { logger } from "./lib/logger";
 logger.info(`Starting server on port ${serverEnv.PORT}...`);
 
 Bun.serve({
-  port: parseInt(serverEnv.PORT, 10),
   development: serverEnv.NODE_ENV === "development",
   fetch,
+  port: parseInt(serverEnv.PORT, 10),
 });
 
 logger.info("Server started");

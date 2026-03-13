@@ -1,11 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { ArrowRightIcon, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@starter/ui/components/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -31,43 +32,44 @@ const providers = [
 
 type ProviderId = (typeof providers)[number]["id"];
 
-export function LinkedProviders() {
+export function LinkedProviders({ onBack }: { onBack?: () => void }) {
   const queryClient = useQueryClient();
-  const { data: accounts } = useQuery(authClient.account.listAccounts.queryOptions());
+  const { data: accounts } = useSuspenseQuery(authClient.listAccounts.queryOptions());
   const [pendingProvider, setPendingProvider] = useState<ProviderId | null>(null);
 
   const linkProvider = useMutation(
-    authClient.account.linkSocial.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: authClient.account.key() });
-      },
+    authClient.linkSocial.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to link account", { description: error.message });
+        toast.error(error.message);
         setPendingProvider(null);
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: authClient.listAccounts.key() });
       },
     }),
   );
 
   const unlinkProvider = useMutation(
-    authClient.account.unlinkAccount.mutationOptions({
-      onSuccess: () => {
-        toast.success("Account unlinked successfully");
-        queryClient.invalidateQueries({ queryKey: authClient.account.key() });
-      },
+    authClient.unlinkAccount.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to unlink account", { description: error.message });
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Account unlinked successfully");
+        await queryClient.invalidateQueries({ queryKey: authClient.listAccounts.key() });
       },
     }),
   );
 
-  const linkedProviderIds = new Set(accounts?.map((a) => a.providerId) ?? []);
+  const linkedProviderIds = new Set(accounts?.map((a) => a.providerId));
   const isBusy = linkProvider.isPending || unlinkProvider.isPending;
 
   const handleLink = (provider: ProviderId) => {
     setPendingProvider(provider);
     linkProvider.mutate({
-      provider,
       callbackURL: window.location.href,
+      errorCallbackURL: `${window.location.origin}/auth/error`,
+      provider,
     });
   };
 
@@ -76,13 +78,20 @@ export function LinkedProviders() {
   };
 
   return (
-    <Card>
+    <Card className="rounded-xl shadow-none ring-0">
       <CardHeader>
-        <CardTitle>Providers</CardTitle>
+        <CardTitle>Linked Providers</CardTitle>
         <CardDescription>Connect your account with a third-party service.</CardDescription>
+        {onBack ? (
+          <CardAction>
+            <Button variant="ghost" size="icon" onClick={onBack}>
+              <ArrowRightIcon className="size-3.5" />
+            </Button>
+          </CardAction>
+        ) : null}
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {providers.map((provider) => {
             const isLinked = linkedProviderIds.has(provider.id);
             const isLoading =
@@ -92,7 +101,7 @@ export function LinkedProviders() {
             return (
               <div
                 key={provider.id}
-                className="flex items-center justify-between rounded-lg border px-4 py-3"
+                className="flex items-center justify-between rounded-lg border px-3 py-2.5"
               >
                 <div className="flex items-center gap-3">
                   <provider.logo className="size-5" />

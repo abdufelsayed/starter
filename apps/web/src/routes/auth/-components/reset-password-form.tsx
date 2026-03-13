@@ -20,9 +20,9 @@ export function ResetPasswordForm({ className, token }: { className?: string; to
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const resetPassword = useMutation(
-    authClient.account.resetPassword.mutationOptions({
+    authClient.resetPassword.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to reset password", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
@@ -32,9 +32,6 @@ export function ResetPasswordForm({ className, token }: { className?: string; to
       password: "",
       confirmPassword: "",
     },
-    validators: {
-      onChange: resetPasswordSchema,
-    },
     onSubmit: async ({ value }) => {
       await resetPassword.mutateAsync(
         {
@@ -42,12 +39,15 @@ export function ResetPasswordForm({ className, token }: { className?: string; to
           token,
         },
         {
-          onSuccess: () => {
+          onSuccess: async () => {
             toast.success("Password reset successfully");
-            navigate({ to: "/auth/sign-in" });
+            await navigate({ to: "/auth/sign-in" });
           },
         },
       );
+    },
+    validators: {
+      onChange: resetPasswordSchema,
     },
   });
 
@@ -55,20 +55,19 @@ export function ResetPasswordForm({ className, token }: { className?: string; to
     <Shell className={className}>
       <CardHeader className="flex flex-col items-start justify-start">
         <CardTitle className="flex flex-col gap-4">
-          <img src="/logo192.png" className="size-10" />
+          <img src="/logo192.png" alt="Logo" className="size-10" />
           <span className="text-xl">Create new password</span>
         </CardTitle>
         <CardDescription>Please enter your new password below.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            form.handleSubmit();
+            await form.handleSubmit();
           }}
-          className="space-y-4"
         >
-          <fieldset disabled={form.state.isSubmitting} className="space-y-4">
+          <fieldset disabled={resetPassword.isPending}>
             <FieldGroup>
               <form.Field name="password">
                 {(field) => {
@@ -144,11 +143,15 @@ export function ResetPasswordForm({ className, token }: { className?: string; to
                   );
                 }}
               </form.Field>
+              <form.Subscribe selector={(state) => state.canSubmit}>
+                {(canSubmit) => (
+                  <Button className="w-full" type="submit" disabled={!canSubmit}>
+                    {resetPassword.isPending && <LoaderIcon className="mr-1 size-3 animate-spin" />}
+                    Reset password
+                  </Button>
+                )}
+              </form.Subscribe>
             </FieldGroup>
-            <Button className="w-full" type="submit">
-              {form.state.isSubmitting && <LoaderIcon className="mr-1 size-3 animate-spin" />}
-              Reset password
-            </Button>
           </fieldset>
         </form>
         <div className="flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground md:flex-row md:gap-0">

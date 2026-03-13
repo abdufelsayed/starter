@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import {
   AlertDialog,
+  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -15,13 +16,6 @@ import {
   AlertDialogTrigger,
 } from "@starter/ui/components/alert-dialog";
 import { Button } from "@starter/ui/components/button";
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@starter/ui/components/card";
 import { Field, FieldLabel } from "@starter/ui/components/field";
 import { Input } from "@starter/ui/components/input";
 
@@ -30,7 +24,7 @@ import { authClient } from "@/lib/auth";
 const CONFIRMATION_TEXT = "delete my account";
 
 export function DeleteAccount() {
-  const { data: session } = useQuery(authClient.session.get.queryOptions());
+  const { data: session } = useSuspenseQuery(authClient.getSession.queryOptions());
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -38,16 +32,16 @@ export function DeleteAccount() {
   const [confirmText, setConfirmText] = useState("");
 
   const deleteUser = useMutation(
-    authClient.account.deleteUser.mutationOptions({
-      onSuccess: () => {
+    authClient.deleteUser.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
         queryClient.clear();
-        router.navigate({ to: "/auth/sign-in" });
+        await router.navigate({ to: "/auth/sign-in" });
         toast.success("Account deleted", {
           description: "Your account has been permanently deleted.",
         });
-      },
-      onError: (error) => {
-        toast.error("Failed to delete account", { description: error.message });
       },
     }),
   );
@@ -60,15 +54,13 @@ export function DeleteAccount() {
   };
 
   return (
-    <Card className="border-destructive/30 ring-destructive/20">
-      <CardHeader>
-        <CardTitle className="text-destructive">Delete Account</CardTitle>
-        <CardDescription>
-          Permanently remove your account and all of its contents. This action is not reversible, so
-          please continue with caution.
-        </CardDescription>
-      </CardHeader>
-      <CardFooter className="justify-end border-destructive/30 bg-destructive/5">
+    <div className="space-y-4">
+      <p className="text-xs text-destructive/80">
+        Permanently remove your account and all of its contents. This action is not reversible, so
+        please continue with caution.
+      </p>
+      <div className="flex items-center justify-between border-t border-destructive/20 pt-3">
+        <div />
         <AlertDialog>
           <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
             Delete Account
@@ -113,24 +105,26 @@ export function DeleteAccount() {
               </Field>
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={resetState}>Cancel</AlertDialogCancel>
-              <Button
+              <AlertDialogCancel size="sm" variant="outline" onClick={resetState}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
                 variant="destructive"
                 disabled={!isConfirmed || deleteUser.isPending}
                 onClick={() => {
                   deleteUser.mutate({
-                    password,
                     callbackURL: "/auth/sign-in",
+                    password,
                   });
                 }}
               >
                 {deleteUser.isPending && <LoaderIcon className="mr-2 size-4 animate-spin" />}
                 Permanently Delete Account
-              </Button>
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }

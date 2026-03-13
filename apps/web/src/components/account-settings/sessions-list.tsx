@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { Laptop, Loader2, Smartphone } from "lucide-react";
 import { toast } from "sonner";
@@ -18,27 +18,28 @@ import { authClient } from "@/lib/auth";
 export function SessionsList() {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { data: sessionData } = useQuery(authClient.session.get.queryOptions());
-  const { data: sessions } = useQuery(authClient.session.list.queryOptions());
+  const { data: sessionData } = useSuspenseQuery(authClient.getSession.queryOptions());
+  const { data: sessions } = useSuspenseQuery(authClient.listSessions.queryOptions());
   const revokeSession = useMutation(
-    authClient.account.revokeSession.mutationOptions({
-      onSuccess: () => {
+    authClient.revokeSession.mutationOptions({
+      onSuccess: async () => {
         toast.success("Session revoked successfully");
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
+        await queryClient.invalidateQueries({ queryKey: authClient.listSessions.key() });
       },
-      onError: () => {
-        toast.error("Failed to revoke session");
+      onError: (error) => {
+        toast.error(error.message);
       },
     }),
   );
   const signOut = useMutation(
-    authClient.session.signOut.mutationOptions({
-      onSuccess: () => {
+    authClient.signOut.mutationOptions({
+      onSuccess: async () => {
         queryClient.clear();
-        router.navigate({ to: "/auth/sign-in" });
+        await router.navigate({ to: "/auth/sign-in" });
       },
       onError: (error) => {
-        toast.error("Failed to sign out", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
@@ -54,15 +55,16 @@ export function SessionsList() {
   };
 
   return (
-    <Card>
+    <Card className="rounded-xl shadow-none ring-0">
       <CardHeader>
         <CardTitle>Sessions</CardTitle>
         <CardDescription>Manage your active sessions and revoke access.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {sessions?.map((s) => {
-            const parser = UAParser(s.userAgent as string);
+            const userAgent = typeof s.userAgent === "string" ? s.userAgent : "";
+            const parser = UAParser(userAgent);
             const isMobile = parser.device.type === "mobile";
             const isCurrentSession = s.id === currentSession?.id;
 
@@ -73,7 +75,7 @@ export function SessionsList() {
             return (
               <div
                 key={s.id}
-                className="flex items-center justify-between rounded-lg border px-4 py-3"
+                className="flex items-center justify-between rounded-lg border px-3 py-2.5"
               >
                 <div className="flex items-center gap-3">
                   {isMobile ? <Smartphone className="size-4" /> : <Laptop className="size-4" />}

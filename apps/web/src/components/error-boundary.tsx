@@ -33,11 +33,11 @@ function ErrorFallback({ error, resetError }: { error: unknown; resetError: () =
   // Show toast for production
   useEffect(() => {
     toast.error("Something went wrong", {
-      description: message,
       action: {
         label: "Try again",
         onClick: resetError,
       },
+      description: message,
       duration: Infinity,
     });
   }, [message, resetError]);
@@ -81,8 +81,8 @@ function ErrorFallback({ error, resetError }: { error: unknown; resetError: () =
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${message}\n\n${stack ?? ""}`);
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(`${message}\n\n${stack ?? ""}`);
                       toast.success("Error details copied to clipboard");
                     }}
                     className="flex items-center gap-1 text-xs"

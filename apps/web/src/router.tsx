@@ -10,20 +10,20 @@ export const getRouter = () => {
   const reactQueryContext = TanstackQuery.getContext();
 
   const router = createRouter({
-    routeTree,
-    context: { ...reactQueryContext },
-    defaultPreload: "intent",
-    defaultNotFoundComponent: NotFound,
     Wrap: (props: { children: React.ReactNode }) => {
       return (
         <TanstackQuery.Provider {...reactQueryContext}>{props.children}</TanstackQuery.Provider>
       );
     },
+    context: { ...reactQueryContext },
+    defaultNotFoundComponent: NotFound,
+    defaultPreload: "intent",
+    routeTree,
   });
 
   setupRouterSsrQueryIntegration({
-    router,
     queryClient: reactQueryContext.queryClient,
+    router,
   });
 
   if (!router.isServer && !import.meta.env.DEV) {
@@ -43,15 +43,15 @@ export const getRouter = () => {
       ],
 
       // Adjust sample rates for production vs development
-      tracesSampleRate: import.meta.env.DEV ? 0.1 : 1.0,
+      tracesSampleRate: import.meta.env.DEV ? 0.1 : 1,
 
       // Capture Replay for 10% of all sessions,
-      // plus for 100% of sessions with an error.
+      // Plus for 100% of sessions with an error.
       replaysSessionSampleRate: 0.1,
-      replaysOnErrorSampleRate: 1.0,
+      replaysOnErrorSampleRate: 1,
 
       // Enable profiling for performance insights
-      profilesSampleRate: import.meta.env.DEV ? 0.1 : 1.0,
+      profilesSampleRate: import.meta.env.DEV ? 0.1 : 1,
     });
   }
 

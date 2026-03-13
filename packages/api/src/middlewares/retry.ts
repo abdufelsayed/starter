@@ -34,19 +34,19 @@ export function retry(options: RetryOptions) {
           context: {
             retry: {
               attempt,
-              maxAttempts,
               canRetry: false,
               isRetry,
+              maxAttempts,
             },
           },
         });
-      } catch (e) {
-        lastError = e;
+      } catch (error) {
+        lastError = error;
 
         if (attempt < maxAttempts) {
           span?.addEvent("retry.attemptFailed", {
             attempt,
-            error: String(e),
+            error: String(error),
             remainingAttempts: maxAttempts - attempt,
           });
         }
@@ -54,8 +54,8 @@ export function retry(options: RetryOptions) {
     }
 
     span?.addEvent("retry.exhausted", {
-      totalAttempts: attempt,
       error: String(lastError),
+      totalAttempts: attempt,
     });
 
     throw lastError;

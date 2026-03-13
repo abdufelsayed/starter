@@ -7,7 +7,6 @@ import { cn } from "@starter/ui/lib/utils";
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
-      role="navigation"
       aria-label="pagination"
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
@@ -43,6 +42,7 @@ function PaginationLink({ className, isActive, size = "icon", ...props }: Pagina
       className={cn(className)}
       nativeButton={false}
       render={
+        // oxlint-disable-next-line jsx_a11y/anchor-has-content
         <a
           aria-current={isActive ? "page" : undefined}
           data-slot="pagination-link"

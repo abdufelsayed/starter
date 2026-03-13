@@ -13,8 +13,7 @@
   },
   "scripts": {
     "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
-    "generate:components": "turbo gen react-components",
-    "typecheck": "tsc --noEmit"
+    "generate:components": "turbo gen react-components"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
@@ -45,8 +44,8 @@
     "@tailwindcss/postcss": "catalog:tailwind",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
+    "@typescript/native-preview": "catalog:build",
     "shadcn": "^3.6.1",
-    "tailwindcss": "catalog:tailwind",
-    "typescript": "catalog:build"
+    "tailwindcss": "catalog:tailwind"
   }
 }

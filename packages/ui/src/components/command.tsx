@@ -1,4 +1,4 @@
-import { Command as CommandPrimitive } from "cmdk";
+import { Command as CommandPrimitive, useCommandState } from "cmdk";
 import { SearchIcon, CheckIcon } from "lucide-react";
 import * as React from "react";
 
@@ -176,4 +176,5 @@ export {
   CommandItem,
   CommandShortcut,
   CommandSeparator,
+  useCommandState,
 };

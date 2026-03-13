@@ -8,8 +8,7 @@
     "./instrumentation": "./src/instrumentation.ts"
   },
   "scripts": {
-    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
-    "typecheck": "tsc --noEmit"
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo"
   },
   "dependencies": {
     "@axiomhq/pino": "catalog:logging",
@@ -22,7 +21,7 @@
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",
-    "pino-pretty": "catalog:logging",
-    "typescript": "catalog:build"
+    "@typescript/native-preview": "catalog:build",
+    "pino-pretty": "catalog:logging"
   }
 }

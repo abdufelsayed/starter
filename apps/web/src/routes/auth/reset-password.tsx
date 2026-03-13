@@ -8,8 +8,8 @@ const resetPasswordSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth/reset-password")({
-  validateSearch: resetPasswordSearchSchema,
   component: RouteComponent,
+  validateSearch: resetPasswordSearchSchema,
 });
 
 function RouteComponent() {

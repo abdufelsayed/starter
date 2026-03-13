@@ -2,8 +2,9 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { LoaderIcon } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "sonner"; // Kept for onSuccess toast
 
+import { webEnv } from "@starter/env/web";
 import { forgotPasswordSchema } from "@starter/schemas/auth";
 import { Button } from "@starter/ui/components/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@starter/ui/components/card";
@@ -17,9 +18,9 @@ import { SupportLinks } from "./support-links";
 export function ForgotPasswordForm({ className }: { className?: string }) {
   const navigate = useNavigate();
   const requestPasswordReset = useMutation(
-    authClient.account.requestPasswordReset.mutationOptions({
+    authClient.requestPasswordReset.mutationOptions({
       onError: (error) => {
-        toast.error("Failed to send reset link", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
@@ -28,22 +29,22 @@ export function ForgotPasswordForm({ className }: { className?: string }) {
     defaultValues: {
       email: "",
     },
-    validators: {
-      onChange: forgotPasswordSchema,
-    },
     onSubmit: async ({ value }) => {
       await requestPasswordReset.mutateAsync(
         {
           email: value.email,
-          redirectTo: "/auth/reset-password",
+          redirectTo: `${webEnv.VITE_WEB_URL}/auth/reset-password`,
         },
         {
-          onSuccess: () => {
+          onSuccess: async () => {
             toast.success("Reset link sent successfully");
-            navigate({ to: "/auth/forget-password/confirm" });
+            await navigate({ to: "/auth/forget-password/confirm" });
           },
         },
       );
+    },
+    validators: {
+      onChange: forgotPasswordSchema,
     },
   });
 
@@ -51,7 +52,7 @@ export function ForgotPasswordForm({ className }: { className?: string }) {
     <Shell className={className}>
       <CardHeader className="flex flex-col items-start justify-start">
         <CardTitle className="flex flex-col gap-4">
-          <img src="/logo192.png" className="size-10" />
+          <img src="/logo192.png" alt="Logo" className="size-10" />
           <span className="text-xl">Reset your password</span>
         </CardTitle>
         <CardDescription>
@@ -60,13 +61,12 @@ export function ForgotPasswordForm({ className }: { className?: string }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            form.handleSubmit();
+            await form.handleSubmit();
           }}
-          className="space-y-4"
         >
-          <fieldset disabled={form.state.isSubmitting} className="space-y-4">
+          <fieldset disabled={requestPasswordReset.isPending}>
             <FieldGroup>
               <form.Field name="email">
                 {(field) => {
@@ -89,11 +89,17 @@ export function ForgotPasswordForm({ className }: { className?: string }) {
                   );
                 }}
               </form.Field>
+              <form.Subscribe selector={(state) => state.canSubmit}>
+                {(canSubmit) => (
+                  <Button className="w-full" type="submit" disabled={!canSubmit}>
+                    {requestPasswordReset.isPending && (
+                      <LoaderIcon className="mr-1 size-3 animate-spin" />
+                    )}
+                    Send reset link
+                  </Button>
+                )}
+              </form.Subscribe>
             </FieldGroup>
-            <Button className="w-full" type="submit">
-              {form.state.isSubmitting && <LoaderIcon className="mr-1 size-3 animate-spin" />}
-              Send reset link
-            </Button>
           </fieldset>
         </form>
         <div className="flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground md:flex-row md:gap-0">

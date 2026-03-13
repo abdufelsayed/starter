@@ -1,3 +1,4 @@
+import { useTheme } from "better-themes";
 import {
   CircleCheckIcon,
   InfoIcon,
@@ -5,15 +6,16 @@ import {
   OctagonXIcon,
   Loader2Icon,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
+  const resolvedTheme: ToasterProps["theme"] =
+    theme === "dark" || theme === "light" || theme === "system" ? theme : "system";
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={resolvedTheme}
       className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4" />,
@@ -23,6 +25,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
       style={
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
         {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",

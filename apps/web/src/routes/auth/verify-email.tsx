@@ -8,8 +8,8 @@ const verifyEmailSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth/verify-email")({
-  validateSearch: verifyEmailSearchSchema,
   component: RouteComponent,
+  validateSearch: verifyEmailSearchSchema,
 });
 
 function RouteComponent() {

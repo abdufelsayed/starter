@@ -7,14 +7,13 @@
     "./nanoid": "./src/nanoid.ts"
   },
   "scripts": {
-    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
-    "typecheck": "tsc --noEmit"
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo"
   },
   "dependencies": {
     "nanoid": "^5.1.6"
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",
-    "typescript": "catalog:build"
+    "@typescript/native-preview": "catalog:build"
   }
 }

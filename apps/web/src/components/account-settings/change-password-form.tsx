@@ -1,12 +1,13 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LoaderIcon } from "lucide-react";
+import { ArrowRightIcon, LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import * as z from "zod";
 
 import { Button } from "@starter/ui/components/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -20,6 +21,7 @@ import { authClient } from "@/lib/auth";
 
 const changePasswordSchema = z
   .object({
+    confirmPassword: z.string(),
     currentPassword: z.string().min(1, {
       message: "Current password is required.",
     }),
@@ -35,25 +37,24 @@ const changePasswordSchema = z
         message:
           "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
       }),
-    confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match.",
     path: ["confirmPassword"],
   });
 
-export function ChangePasswordForm() {
+export function ChangePasswordForm({ onBack }: { onBack?: () => void }) {
   const queryClient = useQueryClient();
   const changePassword = useMutation(
-    authClient.account.changePassword.mutationOptions({
-      onSuccess: () => {
+    authClient.changePassword.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
         toast.success("Password updated", {
           description: "Your password has been updated successfully.",
         });
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
-      },
-      onError: (error) => {
-        toast.error("Failed to update password", { description: error.message });
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
       },
     }),
   );
@@ -63,9 +64,6 @@ export function ChangePasswordForm() {
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
-    },
-    validators: {
-      onChange: changePasswordSchema,
     },
     onSubmit: async ({ value }) => {
       await changePassword.mutateAsync(
@@ -80,20 +78,30 @@ export function ChangePasswordForm() {
         },
       );
     },
+    validators: {
+      onChange: changePasswordSchema,
+    },
   });
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        form.handleSubmit();
+        await form.handleSubmit();
       }}
     >
       <fieldset disabled={changePassword.isPending}>
-        <Card>
+        <Card className="rounded-xl shadow-none ring-0">
           <CardHeader>
             <CardTitle>Change Password</CardTitle>
             <CardDescription>Enter your current password and a new password.</CardDescription>
+            {onBack ? (
+              <CardAction>
+                <Button type="button" variant="ghost" size="icon" onClick={onBack}>
+                  <ArrowRightIcon className="size-3.5" />
+                </Button>
+              </CardAction>
+            ) : null}
           </CardHeader>
           <CardContent>
             <FieldGroup>
@@ -162,16 +170,21 @@ export function ChangePasswordForm() {
               </form.Field>
             </FieldGroup>
           </CardContent>
-          <CardFooter className="justify-between">
+          <CardFooter>
             <p className="text-xs text-muted-foreground">Please use 8 characters at minimum.</p>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={changePassword.isPending || !form.state.isFormValid || !form.state.isDirty}
-            >
-              {changePassword.isPending && <LoaderIcon className="mr-2 size-4 animate-spin" />}
-              Save
-            </Button>
+            <form.Subscribe selector={(state) => [state.isFormValid, state.isDirty] as const}>
+              {([isFormValid, isDirty]) => (
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="ml-auto"
+                  disabled={changePassword.isPending || !isFormValid || !isDirty}
+                >
+                  {changePassword.isPending && <LoaderIcon className="mr-2 size-4 animate-spin" />}
+                  Save
+                </Button>
+              )}
+            </form.Subscribe>
           </CardFooter>
         </Card>
       </fieldset>

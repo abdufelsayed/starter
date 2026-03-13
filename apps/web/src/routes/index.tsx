@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { buttonVariants } from "@starter/ui/components/button";
 
@@ -6,14 +6,12 @@ import { authClient } from "@/lib/auth";
 import { routeLoggingMiddleware } from "@/middleware/route-logging";
 
 export const Route = createFileRoute("/")({
+  component: RouteComponent,
   loader: async ({ context }) => {
-    const session = await context.queryClient.ensureQueryData(
-      authClient.session.get.queryOptions(),
-    );
+    const session = await context.queryClient.ensureQueryData(authClient.getSession.queryOptions());
     return { session };
   },
   server: { middleware: [routeLoggingMiddleware] },
-  component: RouteComponent,
 });
 
 function RouteComponent() {

@@ -16,6 +16,16 @@ function getClientInfo(headers: Headers) {
   };
 }
 
+function getRequestId(logger: ReturnType<typeof getLogger>): string {
+  const bindings = logger?.bindings();
+
+  if (!bindings || typeof bindings !== "object" || !("id" in bindings)) {
+    return "unknown";
+  }
+
+  return typeof bindings.id === "string" ? bindings.id : "unknown";
+}
+
 export const useSentry = base.middleware(async ({ context: ctx, next, path }) => {
   const span = trace.getSpan(context.active());
   const traceId = span?.spanContext().traceId;
@@ -24,7 +34,7 @@ export const useSentry = base.middleware(async ({ context: ctx, next, path }) =>
   const client = getClientInfo(ctx.reqHeaders ?? new Headers());
 
   const logger = getLogger(ctx);
-  const requestId = (logger?.bindings().id as string | undefined) ?? "unknown";
+  const requestId = getRequestId(logger);
 
   if (span) {
     span.setAttribute("request.id", requestId);

@@ -19,11 +19,12 @@ import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthMagicLinkSentRouteImport } from './routes/auth/magic-link-sent'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as AuthErrorRouteImport } from './routes/auth/error'
+import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as marketingTermsRouteImport } from './routes/(marketing)/terms'
 import { Route as marketingSupportRouteImport } from './routes/(marketing)/support'
 import { Route as marketingPrivacyRouteImport } from './routes/(marketing)/privacy'
 import { Route as marketingPricingRouteImport } from './routes/(marketing)/pricing'
-import { Route as ProtectedDashboardIndexRouteImport } from './routes/_protected/dashboard/index'
 import { Route as AuthForgetPasswordConfirmRouteImport } from './routes/auth/forget-password.confirm'
 
 const ProtectedRoute = ProtectedRouteImport.update({
@@ -75,6 +76,16 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AuthErrorRoute = AuthErrorRouteImport.update({
+  id: '/error',
+  path: '/error',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const marketingTermsRoute = marketingTermsRouteImport.update({
   id: '/(marketing)/terms',
   path: '/terms',
@@ -95,11 +106,6 @@ const marketingPricingRoute = marketingPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProtectedDashboardIndexRoute = ProtectedDashboardIndexRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
-  getParentRoute: () => ProtectedRoute,
-} as any)
 const AuthForgetPasswordConfirmRoute =
   AuthForgetPasswordConfirmRouteImport.update({
     id: '/forget-password/confirm',
@@ -114,6 +120,8 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof marketingPrivacyRoute
   '/support': typeof marketingSupportRoute
   '/terms': typeof marketingTermsRoute
+  '/dashboard': typeof ProtectedDashboardRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/magic-link-sent': typeof AuthMagicLinkSentRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -122,7 +130,6 @@ export interface FileRoutesByFullPath {
   '/auth/verify-2fa': typeof AuthVerify2faRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/auth/forget-password/confirm': typeof AuthForgetPasswordConfirmRoute
-  '/dashboard/': typeof ProtectedDashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -131,6 +138,8 @@ export interface FileRoutesByTo {
   '/privacy': typeof marketingPrivacyRoute
   '/support': typeof marketingSupportRoute
   '/terms': typeof marketingTermsRoute
+  '/dashboard': typeof ProtectedDashboardRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/magic-link-sent': typeof AuthMagicLinkSentRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -139,7 +148,6 @@ export interface FileRoutesByTo {
   '/auth/verify-2fa': typeof AuthVerify2faRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/auth/forget-password/confirm': typeof AuthForgetPasswordConfirmRoute
-  '/dashboard': typeof ProtectedDashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -150,6 +158,8 @@ export interface FileRoutesById {
   '/(marketing)/privacy': typeof marketingPrivacyRoute
   '/(marketing)/support': typeof marketingSupportRoute
   '/(marketing)/terms': typeof marketingTermsRoute
+  '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/magic-link-sent': typeof AuthMagicLinkSentRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -158,7 +168,6 @@ export interface FileRoutesById {
   '/auth/verify-2fa': typeof AuthVerify2faRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/auth/forget-password/confirm': typeof AuthForgetPasswordConfirmRoute
-  '/_protected/dashboard/': typeof ProtectedDashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -169,6 +178,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/support'
     | '/terms'
+    | '/dashboard'
+    | '/auth/error'
     | '/auth/forgot-password'
     | '/auth/magic-link-sent'
     | '/auth/reset-password'
@@ -177,7 +188,6 @@ export interface FileRouteTypes {
     | '/auth/verify-2fa'
     | '/auth/verify-email'
     | '/auth/forget-password/confirm'
-    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -186,6 +196,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/support'
     | '/terms'
+    | '/dashboard'
+    | '/auth/error'
     | '/auth/forgot-password'
     | '/auth/magic-link-sent'
     | '/auth/reset-password'
@@ -194,7 +206,6 @@ export interface FileRouteTypes {
     | '/auth/verify-2fa'
     | '/auth/verify-email'
     | '/auth/forget-password/confirm'
-    | '/dashboard'
   id:
     | '__root__'
     | '/'
@@ -204,6 +215,8 @@ export interface FileRouteTypes {
     | '/(marketing)/privacy'
     | '/(marketing)/support'
     | '/(marketing)/terms'
+    | '/_protected/dashboard'
+    | '/auth/error'
     | '/auth/forgot-password'
     | '/auth/magic-link-sent'
     | '/auth/reset-password'
@@ -212,7 +225,6 @@ export interface FileRouteTypes {
     | '/auth/verify-2fa'
     | '/auth/verify-email'
     | '/auth/forget-password/confirm'
-    | '/_protected/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -297,6 +309,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/auth/error': {
+      id: '/auth/error'
+      path: '/error'
+      fullPath: '/auth/error'
+      preLoaderRoute: typeof AuthErrorRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_protected/dashboard': {
+      id: '/_protected/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof ProtectedDashboardRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/(marketing)/terms': {
       id: '/(marketing)/terms'
       path: '/terms'
@@ -325,13 +351,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof marketingPricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_protected/dashboard/': {
-      id: '/_protected/dashboard/'
-      path: '/dashboard'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof ProtectedDashboardIndexRouteImport
-      parentRoute: typeof ProtectedRoute
-    }
     '/auth/forget-password/confirm': {
       id: '/auth/forget-password/confirm'
       path: '/forget-password/confirm'
@@ -343,6 +362,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthRouteRouteChildren {
+  AuthErrorRoute: typeof AuthErrorRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthMagicLinkSentRoute: typeof AuthMagicLinkSentRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
@@ -354,6 +374,7 @@ interface AuthRouteRouteChildren {
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthErrorRoute: AuthErrorRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthMagicLinkSentRoute: AuthMagicLinkSentRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
@@ -369,11 +390,11 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface ProtectedRouteChildren {
-  ProtectedDashboardIndexRoute: typeof ProtectedDashboardIndexRoute
+  ProtectedDashboardRoute: typeof ProtectedDashboardRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
-  ProtectedDashboardIndexRoute: ProtectedDashboardIndexRoute,
+  ProtectedDashboardRoute: ProtectedDashboardRoute,
 }
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(

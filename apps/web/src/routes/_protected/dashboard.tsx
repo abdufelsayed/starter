@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { AccountSettings } from "@/components/account-settings";
 
-export const Route = createFileRoute("/_protected/dashboard/")({
+export const Route = createFileRoute("/_protected/dashboard")({
   component: RouteComponent,
 });
 

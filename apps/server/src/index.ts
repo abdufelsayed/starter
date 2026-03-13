@@ -5,21 +5,21 @@ import { serverEnv } from "@starter/env/server";
 import { logger } from "./lib/logger";
 
 const { openApiHandler, rpcHandler, corsConfig } = createHandlers({
-  corsOrigin: serverEnv.CORS_ORIGIN,
   apiUrl: serverEnv.SERVER_URL,
-  port: serverEnv.PORT,
+  corsOrigin: serverEnv.CORS_ORIGIN,
   isDevelopment: serverEnv.NODE_ENV === "development",
   logger,
+  port: serverEnv.PORT,
 });
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
   const isAllowed = origin && corsConfig.origin.includes(origin);
 
   return {
-    "Access-Control-Allow-Origin": isAllowed ? origin : corsConfig.origin[0],
-    "Access-Control-Allow-Methods": corsConfig.allowMethods.join(", "),
-    "Access-Control-Allow-Headers": corsConfig.allowHeaders.join(", "),
     "Access-Control-Allow-Credentials": String(corsConfig.credentials),
+    "Access-Control-Allow-Headers": corsConfig.allowHeaders.join(", "),
+    "Access-Control-Allow-Methods": corsConfig.allowMethods.join(", "),
+    "Access-Control-Allow-Origin": isAllowed ? origin : corsConfig.origin[0],
     "Access-Control-Max-Age": String(corsConfig.maxAge),
   };
 }
@@ -33,9 +33,9 @@ function addCorsHeaders(response: Response, origin: string | null): Response {
   }
 
   return new Response(response.body, {
+    headers: newHeaders,
     status: response.status,
     statusText: response.statusText,
-    headers: newHeaders,
   });
 }
 
@@ -45,8 +45,8 @@ export async function fetch(request: Request): Promise<Response> {
 
   if (url.pathname === "/health" || url.pathname === "/ready") {
     const result = await openApiHandler.handle(request, {
-      prefix: "/",
       context: {},
+      prefix: "/",
     });
 
     if (result.matched) {
@@ -56,8 +56,8 @@ export async function fetch(request: Request): Promise<Response> {
 
   if (url.pathname.startsWith("/rpc")) {
     const result = await rpcHandler.handle(request, {
-      prefix: "/rpc",
       context: {},
+      prefix: "/rpc",
     });
 
     if (result.matched) {
@@ -70,8 +70,8 @@ export async function fetch(request: Request): Promise<Response> {
   if (url.pathname.startsWith("/api/auth")) {
     if (request.method === "OPTIONS") {
       return new Response(null, {
-        status: 204,
         headers: getCorsHeaders(origin),
+        status: 204,
       });
     }
 
@@ -81,8 +81,8 @@ export async function fetch(request: Request): Promise<Response> {
 
   if (url.pathname.startsWith("/api")) {
     const result = await openApiHandler.handle(request, {
-      prefix: "/api",
       context: {},
+      prefix: "/api",
     });
 
     if (result.matched) {

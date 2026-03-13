@@ -4,10 +4,10 @@ import { SubscriptionPlans } from "@/components/billing/subscription-plans";
 import { authClient } from "@/lib/auth";
 
 export const Route = createFileRoute("/(marketing)/pricing")({
-  loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(authClient.session.get.queryOptions());
-  },
   component: PricingPage,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(authClient.getSession.queryOptions());
+  },
 });
 
 function PricingPage() {

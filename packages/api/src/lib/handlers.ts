@@ -33,6 +33,21 @@ export interface HandlersOptions {
   logger: Logger;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function withAuthTag(operation: unknown): unknown {
+  if (!isRecord(operation)) {
+    return operation;
+  }
+
+  return {
+    ...operation,
+    tags: ["Authentication"],
+  };
+}
+
 export function createCorsConfig(corsOrigin: string): CorsConfig {
   return {
     origin: corsOrigin.split(","),
@@ -75,12 +90,14 @@ export function createHandlers(options: HandlersOptions) {
           const authPaths = Object.fromEntries(
             Object.entries(authSchema.paths).map(([path, methods]) => [
               `/api/auth${path}`,
-              Object.fromEntries(
-                Object.entries(methods as Record<string, unknown>).map(([method, operation]) => [
-                  method,
-                  { ...(operation as object), tags: ["Authentication"] },
-                ]),
-              ),
+              isRecord(methods)
+                ? Object.fromEntries(
+                    Object.entries(methods).map(([method, operation]) => [
+                      method,
+                      withAuthTag(operation),
+                    ]),
+                  )
+                : {},
             ]),
           );
 
@@ -97,7 +114,7 @@ export function createHandlers(options: HandlersOptions) {
             ],
             tags: [{ name: "Authentication", description: "Authentication endpoints" }],
             paths: authPaths,
-            components: authSchema.components as Record<string, unknown>,
+            components: isRecord(authSchema.components) ? authSchema.components : {},
           };
         },
       }),

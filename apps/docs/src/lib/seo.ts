@@ -13,28 +13,28 @@ export const seo = ({
 }) => {
   const tags = [
     { title },
-    { name: "description", content: description },
-    { name: "keywords", content: keywords },
+    { content: description, name: "description" },
+    { content: keywords, name: "keywords" },
     // Twitter Card tags
-    { name: "twitter:title", content: title },
-    { name: "twitter:description", content: description },
-    { name: "twitter:creator", content: "@abdufelsayed" },
-    { name: "twitter:site", content: "@abdufelsayed" },
-    { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
+    { content: title, name: "twitter:title" },
+    { content: description, name: "twitter:description" },
+    { content: "@abdufelsayed", name: "twitter:creator" },
+    { content: "@abdufelsayed", name: "twitter:site" },
+    { content: image ? "summary_large_image" : "summary", name: "twitter:card" },
     // Open Graph tags (use property, not name)
-    { property: "og:type", content: "website" },
-    { property: "og:title", content: title },
-    { property: "og:description", content: description },
+    { content: "website", property: "og:type" },
+    { content: title, property: "og:title" },
+    { content: description, property: "og:description" },
     ...(url
       ? [
-          { property: "og:url", content: url },
-          { name: "twitter:url", content: url },
+          { content: url, property: "og:url" },
+          { content: url, name: "twitter:url" },
         ]
       : []),
     ...(image
       ? [
-          { name: "twitter:image", content: image },
-          { property: "og:image", content: image },
+          { content: image, name: "twitter:image" },
+          { content: image, property: "og:image" },
         ]
       : []),
   ];

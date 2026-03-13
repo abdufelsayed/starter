@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import {
   Card,
@@ -40,7 +40,9 @@ function RouteComponent() {
               Sign in
             </Link>
           </div>
-          <SupportLinks />
+          <div className="flex items-center justify-end text-xs text-muted-foreground">
+            <SupportLinks />
+          </div>
         </div>
       </CardContent>
     </Card>

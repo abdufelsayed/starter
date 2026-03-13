@@ -3,12 +3,11 @@
   "version": "0.0.1",
   "private": true,
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./src/index.tsx",
     "./react": "./src/react/index.ts"
   },
   "scripts": {
-    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
-    "typecheck": "tsc --noEmit"
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo"
   },
   "dependencies": {
     "@better-auth/stripe": "catalog:auth",
@@ -25,6 +24,6 @@
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",
     "@types/react": "catalog:react",
-    "typescript": "catalog:build"
+    "@typescript/native-preview": "catalog:build"
   }
 }

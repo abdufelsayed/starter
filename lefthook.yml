@@ -16,10 +16,6 @@ pre-commit:
       glob: "*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,json,jsonc,css,graphql,gql}"
       stage_fixed: true
 
-    - name: Typecheck
-      run: bun typecheck
-      stage_fixed: true
-
     - name: Build
       run: bun run build
       stage_fixed: true

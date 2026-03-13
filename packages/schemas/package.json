@@ -7,14 +7,13 @@
     "./*": "./src/*.ts"
   },
   "scripts": {
-    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
-    "typecheck": "tsc --noEmit"
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo"
   },
   "dependencies": {
     "zod": "catalog:"
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",
-    "typescript": "catalog:build"
+    "@typescript/native-preview": "catalog:build"
   }
 }

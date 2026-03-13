@@ -1,18 +1,20 @@
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LoaderIcon } from "lucide-react";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { ArrowRightIcon, LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import * as z from "zod";
 
 import { Button } from "@starter/ui/components/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@starter/ui/components/card";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@starter/ui/components/field";
 import { Input } from "@starter/ui/components/input";
 
 import { authClient } from "@/lib/auth";
@@ -31,19 +33,19 @@ const updateNameSchema = z.object({
     }),
 });
 
-export function UpdateNameForm() {
-  const { data: session } = useQuery(authClient.session.get.queryOptions());
+export function UpdateNameForm({ onBack }: { onBack?: () => void }) {
+  const { data: session } = useSuspenseQuery(authClient.getSession.queryOptions());
   const queryClient = useQueryClient();
   const updateUser = useMutation(
-    authClient.account.updateUser.mutationOptions({
-      onSuccess: () => {
+    authClient.updateUser.mutationOptions({
+      onSuccess: async () => {
         toast.success("Profile updated", {
           description: "Your name has been updated successfully.",
         });
-        queryClient.invalidateQueries({ queryKey: authClient.session.key() });
+        await queryClient.invalidateQueries({ queryKey: authClient.getSession.key() });
       },
       onError: (error) => {
-        toast.error("Failed to update profile", { description: error.message });
+        toast.error(error.message);
       },
     }),
   );
@@ -62,41 +64,63 @@ export function UpdateNameForm() {
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        form.handleSubmit();
+        await form.handleSubmit();
       }}
     >
       <fieldset disabled={updateUser.isPending}>
-        <Card>
+        <Card className="rounded-xl shadow-none ring-0">
           <CardHeader>
-            <CardTitle>Name</CardTitle>
+            <CardTitle>Profile</CardTitle>
             <CardDescription>Please enter your full name, or a display name.</CardDescription>
+            {onBack ? (
+              <CardAction>
+                <Button type="button" variant="ghost" size="icon" onClick={onBack}>
+                  <ArrowRightIcon className="size-3.5" />
+                </Button>
+              </CardAction>
+            ) : null}
           </CardHeader>
           <CardContent>
-            <form.Field name="name">
-              {(field) => (
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  placeholder="Your name"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              )}
-            </form.Field>
+            <FieldGroup>
+              <form.Field name="name">
+                {(field) => {
+                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        placeholder="Your name"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />
+                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+            </FieldGroup>
           </CardContent>
-          <CardFooter className="justify-between">
+          <CardFooter>
             <p className="text-xs text-muted-foreground">Please use 32 characters at maximum.</p>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={!form.state.isFormValid || !form.state.isDirty}
-            >
-              {updateUser.isPending && <LoaderIcon className="mr-2 size-4 animate-spin" />}
-              Save
-            </Button>
+            <form.Subscribe selector={(state) => [state.isFormValid, state.isDirty] as const}>
+              {([isFormValid, isDirty]) => (
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="ml-auto"
+                  disabled={!isFormValid || !isDirty}
+                >
+                  {updateUser.isPending && <LoaderIcon className="mr-2 size-4 animate-spin" />}
+                  Save
+                </Button>
+              )}
+            </form.Subscribe>
           </CardFooter>
         </Card>
       </fieldset>

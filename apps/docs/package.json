@@ -10,8 +10,7 @@
     "preview": "vite preview",
     "types:check": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
-    "clean": "git clean -xdf .output node_modules dist .turbo .tanstack .source .tsbuildinfo",
-    "typecheck": "tsc --noEmit"
+    "clean": "git clean -xdf .output node_modules dist .turbo .tanstack .source .tsbuildinfo"
   },
   "dependencies": {
     "@tanstack/react-router": "catalog:tanstack",
@@ -32,11 +31,11 @@
     "@types/mdx": "^2.0.13",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
+    "@typescript/native-preview": "catalog:build",
     "@vitejs/plugin-react": "catalog:build",
     "nitro": "catalog:build",
     "srvx": "^0.11.5",
     "tailwindcss": "catalog:tailwind",
-    "typescript": "catalog:build",
     "vite": "catalog:build",
     "vite-tsconfig-paths": "catalog:build"
   }

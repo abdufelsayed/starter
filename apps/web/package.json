@@ -7,8 +7,7 @@
     "clean": "git clean -xdf .output node_modules dist .turbo .tanstack .tsbuildinfo",
     "dev": "bun --bun vite dev --port 3000",
     "preview": "bun --bun vite preview",
-    "start": "bun --import ./.output/server/instrument.server.js .output/server/index.mjs",
-    "typecheck": "tsc --noEmit"
+    "start": "bun --import ./.output/server/instrument.server.js .output/server/index.mjs"
   },
   "dependencies": {
     "@opentelemetry/instrumentation-http": "catalog:otel",
@@ -50,12 +49,12 @@
     "@testing-library/react": "catalog:testing",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
+    "@typescript/native-preview": "catalog:build",
     "@vitejs/plugin-react": "catalog:build",
     "babel-plugin-react-compiler": "^1.0.0",
     "jsdom": "catalog:testing",
     "nitro": "catalog:build",
     "pino-pretty": "catalog:logging",
-    "typescript": "catalog:build",
     "vite": "catalog:build",
     "vite-tsconfig-paths": "catalog:build",
     "vitest": "catalog:testing"

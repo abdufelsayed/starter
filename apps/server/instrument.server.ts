@@ -18,23 +18,23 @@ import {
 // =============================================================================
 
 const otelConfig = {
-  serviceName: serverEnv.OTEL_SERVICE_NAME,
-  serviceVersion: serverEnv.OTEL_SERVICE_VERSION,
-  environment: serverEnv.NODE_ENV,
   axiom: {
     endpoint: serverEnv.AXIOM_ENDPOINT,
     token: serverEnv.AXIOM_TOKEN,
     dataset: serverEnv.AXIOM_DATASET,
   },
+  environment: serverEnv.NODE_ENV,
+  serviceName: serverEnv.OTEL_SERVICE_NAME,
+  serviceVersion: serverEnv.OTEL_SERVICE_VERSION,
 };
 
 const exporter = createAxiomExporter(otelConfig);
 
 const sdk = new NodeSDK({
-  resource: createOtelResource(otelConfig),
-  spanProcessor: createBatchSpanProcessor(exporter),
   instrumentations: [new ORPCInstrumentation()],
+  resource: createOtelResource(otelConfig),
   sampler: createTraceSampler(serverEnv.NODE_ENV),
+  spanProcessor: createBatchSpanProcessor(exporter),
 });
 
 sdk.start();
@@ -51,7 +51,7 @@ Sentry.init({
   environment: serverEnv.NODE_ENV,
   release: serverEnv.OTEL_SERVICE_VERSION,
   sendDefaultPii: true,
-  tracesSampleRate: serverEnv.NODE_ENV === "production" ? 0.1 : 1.0,
+  tracesSampleRate: serverEnv.NODE_ENV === "production" ? 0.1 : 1,
 });
 
 logger.info(`Sentry initialized for ${serverEnv.NODE_ENV}`);
