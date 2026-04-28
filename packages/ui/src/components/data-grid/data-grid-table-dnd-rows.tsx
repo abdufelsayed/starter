@@ -13,7 +13,7 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { type Cell, flexRender, type HeaderGroup, type Row } from "@tanstack/react-table";
+import { type Cell, flexRender, type Row } from "@tanstack/react-table";
 import { GripHorizontalIcon } from "lucide-react";
 import { createContext, type CSSProperties, useContext, useId, useMemo, useRef } from "react";
 
@@ -106,7 +106,7 @@ function DataGridTableDndRow<TData>({ row }: { row: Row<TData> }) {
   );
 }
 
-function DataGridTableDndRows<TData>({
+function DataGridTableDndRows({
   handleDragEnd,
   dataIds,
 }: {
@@ -158,7 +158,7 @@ function DataGridTableDndRows<TData>({
       <div ref={tableContainerRef} className="relative">
         <DataGridTableBase>
           <DataGridTableHead>
-            {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
+            {table.getHeaderGroups().map((headerGroup, index) => {
               return (
                 <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
                   {headerGroup.headers.map((header, index) => {
@@ -199,7 +199,7 @@ function DataGridTableDndRows<TData>({
               ))
             ) : table.getRowModel().rows.length ? (
               <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
-                {table.getRowModel().rows.map((row: Row<TData>) => {
+                {table.getRowModel().rows.map((row) => {
                   return <DataGridTableDndRow row={row} key={row.id} />;
                 })}
               </SortableContext>

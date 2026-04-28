@@ -1,12 +1,13 @@
 import { useMutation, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { Laptop, Loader2, Smartphone } from "lucide-react";
+import { ArrowRightIcon, Laptop, Loader2, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { UAParser } from "ua-parser-js";
 
 import { Button } from "@starter/ui/components/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -15,7 +16,7 @@ import {
 
 import { authClient } from "@/lib/auth";
 
-export function SessionsList() {
+export function SessionsList({ onBack }: { onBack?: () => void }) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { data: sessionData } = useSuspenseQuery(authClient.getSession.queryOptions());
@@ -59,6 +60,13 @@ export function SessionsList() {
       <CardHeader>
         <CardTitle>Sessions</CardTitle>
         <CardDescription>Manage your active sessions and revoke access.</CardDescription>
+        {onBack ? (
+          <CardAction>
+            <Button type="button" variant="ghost" size="icon" onClick={onBack}>
+              <ArrowRightIcon className="size-3.5" />
+            </Button>
+          </CardAction>
+        ) : null}
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-2">

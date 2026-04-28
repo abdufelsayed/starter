@@ -13,10 +13,11 @@ import { Input } from "@starter/ui/components/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@starter/ui/components/input-otp";
 
 import { authClient } from "@/lib/auth";
+import { getSafeRedirectPath } from "@/lib/auth-redirect";
 import { Shell } from "@/routes/auth/-components/shell";
 
 const verify2faSearchSchema = z.object({
-  redirect: z.string().optional(),
+  redirect: z.string().optional().transform(getSafeRedirectPath),
 });
 
 export const Route = createFileRoute("/auth/verify-2fa")({

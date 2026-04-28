@@ -4,13 +4,13 @@ import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { webEnv } from "@starter/env/web";
 import { Badge } from "@starter/ui/components/badge";
 import { Button } from "@starter/ui/components/button";
 import { GithubLogo } from "@starter/ui/logos/github";
 import { GoogleLogo } from "@starter/ui/logos/google";
 
 import { authClient } from "@/lib/auth";
+import { getAuthCallbackURL } from "@/lib/auth-redirect";
 
 const providers = [
   {
@@ -28,6 +28,7 @@ type Provider = "google" | "github";
 export function Socials({ disabled }: { disabled?: boolean }) {
   const { lastUsedLoginMethod } = useLoaderData({ from: "/auth" });
   const search = useSearch({ from: "/auth" });
+  const callbackURL = getAuthCallbackURL(search.redirect);
   const [pendingProvider, setPendingProvider] = useState<Provider | null>(null);
   const signInSocial = useMutation(
     authClient.signIn.social.mutationOptions({
@@ -41,8 +42,8 @@ export function Socials({ disabled }: { disabled?: boolean }) {
     setPendingProvider(provider);
     await signInSocial.mutateAsync(
       {
-        callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
-        errorCallbackURL: `${webEnv.VITE_WEB_URL}/auth/error`,
+        callbackURL,
+        errorCallbackURL: getAuthCallbackURL("/auth/error"),
         provider,
       },
       {

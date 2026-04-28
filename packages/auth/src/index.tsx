@@ -7,6 +7,7 @@ import {
   lastLoginMethod,
   magicLink,
   openAPI,
+  organization,
   twoFactor,
 } from "better-auth/plugins";
 import { Stripe } from "stripe";
@@ -18,24 +19,30 @@ import {
   ChangeEmailConfirmationEmail,
   DeleteAccountVerificationEmail,
   MagicLinkEmail,
+  OrganizationInvitationEmail,
   PasswordResetEmail,
   PasswordResetSuccessEmail,
   TwoFactorOtpEmail,
   VerificationEmail,
 } from "@starter/email/templates";
-import { serverEnv } from "@starter/env/server";
+import { serverEnv, serverUrls } from "@starter/env/server";
 import { PLANS, TRIAL_DAYS } from "@starter/schemas/billing";
+import { nanoid } from "@starter/shared/nanoid";
 
 export const stripeClient = new Stripe(serverEnv.STRIPE_SECRET_KEY, {
-  apiVersion: "2026-01-28.clover",
+  apiVersion: "2026-04-22.dahlia",
 });
+
+const requireEmailVerification = serverEnv.NODE_ENV === "production";
 
 export const auth = betterAuth({
   appName: "Starter",
   secret: serverEnv.BETTER_AUTH_SECRET,
-  baseURL: serverEnv.SERVER_URL,
+  baseURL: serverUrls.api,
   basePath: "/api/auth",
-  trustedOrigins: serverEnv.CORS_HOST.split(","),
+  trustedOrigins: serverEnv.CORS_HOST.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   database: drizzleAdapter(db, {
     provider: "pg",
     usePlural: true,
@@ -59,7 +66,7 @@ export const auth = betterAuth({
   advanced: {
     useSecureCookies: serverEnv.NODE_ENV === "production",
     database: {
-      generateId: false,
+      generateId: () => nanoid(),
     },
     cookiePrefix: "starter",
   },
@@ -80,21 +87,9 @@ export const auth = betterAuth({
       enabled: true,
       maxAge: 60 * 5, // 5 minutes
     },
-    additionalFields: {
-      activeOrganizationId: {
-        type: "string",
-        required: true,
-        input: false,
-      },
-    },
   },
   user: {
     additionalFields: {
-      defaultOrganizationId: {
-        type: "string",
-        required: true,
-        input: false,
-      },
       stripeCustomerId: {
         type: "string",
         required: false,
@@ -150,7 +145,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification,
     autoSignIn: false,
     minPasswordLength: 8,
     maxPasswordLength: 128,
@@ -171,12 +166,12 @@ export const auth = betterAuth({
     },
   },
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: requireEmailVerification,
     autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
       const verificationUrl = new URL(url);
       if (!verificationUrl.searchParams.has("callbackURL")) {
-        verificationUrl.searchParams.set("callbackURL", serverEnv.WEB_APP_URL);
+        verificationUrl.searchParams.set("callbackURL", serverUrls.app);
       }
       await sendEmail({
         to: user.email,
@@ -204,10 +199,32 @@ export const auth = betterAuth({
       },
     }),
     openAPI({ disableDefaultReference: true }),
+    organization({
+      async sendInvitationEmail({ id, email, inviter, organization }) {
+        const invitationUrl = new URL(serverUrls.appPath("/auth/accept-invitation"));
+        invitationUrl.searchParams.set("invitationId", id);
+
+        await sendEmail({
+          to: email,
+          subject: `Invitation to join ${organization.name}`,
+          react: (
+            <OrganizationInvitationEmail
+              inviterName={inviter.user.name}
+              organizationName={organization.name}
+              invitationLink={invitationUrl.toString()}
+            />
+          ),
+        });
+      },
+    }),
     twoFactor({
       issuer: "Starter",
       skipVerificationOnEnable: false,
+      backupCodeOptions: {
+        storeBackupCodes: "encrypted",
+      },
       otpOptions: {
+        storeOTP: "encrypted",
         async sendOTP({ user, otp }) {
           await sendEmail({
             to: user.email,
@@ -225,7 +242,7 @@ export const auth = betterAuth({
       createCustomerOnSignUp: true,
       subscription: {
         enabled: true,
-        requireEmailVerification: true,
+        requireEmailVerification,
         plans: [
           {
             name: PLANS.pro.name,
@@ -264,10 +281,6 @@ export const auth = betterAuth({
         onSubscriptionDeleted: async ({ subscription }) => {
           console.log(`[stripe] Subscription deleted: ${subscription.id}`);
         },
-        storeOTP: "encrypted",
-      },
-      backupCodeOptions: {
-        storeBackupCodes: "encrypted",
       },
     }),
   ],

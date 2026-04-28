@@ -15,30 +15,37 @@
       "persistent": true
     },
     "test": {
-      "inputs": ["src/**", "test/**", "tsconfig.json", "vitest.config.ts"]
+      "inputs": ["src/**", "test/**", "tests/**", "tsconfig.json", "vitest.config.ts"]
     },
     "test:watch": {
       "cache": false,
       "persistent": true
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
     },
     "prepublishOnly": {
       "dependsOn": ["build"],
       "outputs": ["dist/**"]
     },
     "db:generate": {
-      "dependsOn": ["^db:generate"]
+      "cache": false
     },
     "db:migrate": {
-      "dependsOn": ["^db:migrate"]
+      "cache": false
+    },
+    "db:migrate:drop": {
+      "cache": false
     },
     "db:pull": {
-      "dependsOn": ["^db:pull"]
+      "cache": false
     },
     "db:push": {
-      "dependsOn": ["^db:push"]
+      "cache": false
     },
     "db:studio": {
-      "dependsOn": ["^db:studio"]
+      "cache": false
     }
   }
 }

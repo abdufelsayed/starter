@@ -1,8 +1,29 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, bigint, timestamp, boolean, integer, index } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
+
+import { nanoid } from "@starter/shared/nanoid";
+
+type SubscriptionStatus =
+  | "incomplete"
+  | "incomplete_expired"
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "unpaid"
+  | "paused";
 
 export const users = pgTable("users", {
-  id: text("id").primaryKey(),
+  id: text("id").$default(nanoid).primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
@@ -18,17 +39,17 @@ export const users = pgTable("users", {
   banExpires: timestamp("ban_expires"),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
   stripeCustomerId: text("stripe_customer_id"),
-  defaultOrganizationId: text("default_organization_id").notNull(),
 });
 
 export const sessions = pgTable(
   "sessions",
   {
-    id: text("id").primaryKey(),
+    id: text("id").$default(nanoid).primaryKey(),
     expiresAt: timestamp("expires_at").notNull(),
     token: text("token").notNull().unique(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
+      .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
     ipAddress: text("ip_address"),
@@ -37,15 +58,15 @@ export const sessions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     impersonatedBy: text("impersonated_by"),
-    activeOrganizationId: text("active_organization_id").notNull(),
+    activeOrganizationId: text("active_organization_id"),
   },
-  (table) => [index("sessions_userId_idx").on(table.userId)],
+  (table) => [index("sessions_user_id_idx").on(table.userId)],
 );
 
 export const accounts = pgTable(
   "accounts",
   {
-    id: text("id").primaryKey(),
+    id: text("id").$default(nanoid).primaryKey(),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
     userId: text("user_id")
@@ -60,16 +81,17 @@ export const accounts = pgTable(
     password: text("password"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
+      .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index("accounts_userId_idx").on(table.userId)],
+  (table) => [index("accounts_user_id_idx").on(table.userId)],
 );
 
 export const verifications = pgTable(
   "verifications",
   {
-    id: text("id").primaryKey(),
+    id: text("id").$default(nanoid).primaryKey(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
     expiresAt: timestamp("expires_at").notNull(),
@@ -82,56 +104,107 @@ export const verifications = pgTable(
   (table) => [index("verifications_identifier_idx").on(table.identifier)],
 );
 
+export const organizations = pgTable(
+  "organizations",
+  {
+    id: text("id").$default(nanoid).primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    logo: text("logo"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    metadata: text("metadata"),
+  },
+  (table) => [uniqueIndex("organizations_slug_uidx").on(table.slug)],
+);
+
+export const members = pgTable(
+  "members",
+  {
+    id: text("id").$default(nanoid).primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: text("role").default("member").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("members_organization_id_idx").on(table.organizationId),
+    index("members_user_id_idx").on(table.userId),
+  ],
+);
+
+export const invitations = pgTable(
+  "invitations",
+  {
+    id: text("id").$default(nanoid).primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role"),
+    status: text("status").default("pending").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    inviterId: text("inviter_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    index("invitations_organizationId_idx").on(table.organizationId),
+    index("invitations_email_idx").on(table.email),
+  ],
+);
+
 export const twoFactors = pgTable(
   "two_factors",
   {
-    id: text("id").primaryKey(),
+    id: text("id").$default(nanoid).primaryKey(),
     secret: text("secret").notNull(),
     backupCodes: text("backup_codes").notNull(),
+    verified: boolean("verified").default(false).notNull(),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [
-    index("twoFactors_secret_idx").on(table.secret),
-    index("twoFactors_userId_idx").on(table.userId),
+    index("two_factors_secret_idx").on(table.secret),
+    index("two_factors_user_id_idx").on(table.userId),
   ],
 );
 
-export const subscriptions = pgTable("subscriptions", {
-  id: text("id").primaryKey(),
-  plan: text("plan").notNull(),
-  referenceId: text("reference_id").notNull(),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  status: text("status")
-    .$type<
-      | "active"
-      | "canceled"
-      | "incomplete"
-      | "incomplete_expired"
-      | "past_due"
-      | "paused"
-      | "trialing"
-      | "unpaid"
-    >()
-    .default("incomplete")
-    .notNull(),
-  periodStart: timestamp("period_start"),
-  periodEnd: timestamp("period_end"),
-  trialStart: timestamp("trial_start"),
-  trialEnd: timestamp("trial_end"),
-  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
-  cancelAt: timestamp("cancel_at"),
-  canceledAt: timestamp("canceled_at"),
-  endedAt: timestamp("ended_at"),
-  seats: integer("seats"),
-  billingInterval: text("billing_interval"),
-  stripeScheduleId: text("stripe_schedule_id"),
-});
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    id: text("id").$default(nanoid).primaryKey(),
+    plan: text("plan").notNull(),
+    referenceId: text("reference_id").notNull(),
+    stripeCustomerId: text("stripe_customer_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    status: text("status").$type<SubscriptionStatus>().default("incomplete").notNull(),
+    periodStart: timestamp("period_start"),
+    periodEnd: timestamp("period_end"),
+    trialStart: timestamp("trial_start"),
+    trialEnd: timestamp("trial_end"),
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+    cancelAt: timestamp("cancel_at"),
+    canceledAt: timestamp("canceled_at"),
+    endedAt: timestamp("ended_at"),
+    seats: integer("seats"),
+    billingInterval: text("billing_interval"),
+    stripeScheduleId: text("stripe_schedule_id"),
+  },
+  (table) => [
+    index("subscriptions_reference_id_status_idx").on(table.referenceId, table.status),
+    index("subscriptions_stripe_customer_id_idx").on(table.stripeCustomerId),
+    index("subscriptions_stripe_subscription_id_idx").on(table.stripeSubscriptionId),
+  ],
+);
 
 export const rateLimits = pgTable("rate_limits", {
-  id: text("id").primaryKey(),
+  id: text("id").$default(nanoid).primaryKey(),
   key: text("key").notNull().unique(),
   count: integer("count").notNull(),
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
@@ -140,6 +213,8 @@ export const rateLimits = pgTable("rate_limits", {
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
+  members: many(members),
+  invitations: many(invitations),
   twoFactors: many(twoFactors),
 }));
 
@@ -153,6 +228,33 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 export const accountsRelations = relations(accounts, ({ one }) => ({
   users: one(users, {
     fields: [accounts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const organizationsRelations = relations(organizations, ({ many }) => ({
+  members: many(members),
+  invitations: many(invitations),
+}));
+
+export const membersRelations = relations(members, ({ one }) => ({
+  organizations: one(organizations, {
+    fields: [members.organizationId],
+    references: [organizations.id],
+  }),
+  users: one(users, {
+    fields: [members.userId],
+    references: [users.id],
+  }),
+}));
+
+export const invitationsRelations = relations(invitations, ({ one }) => ({
+  organizations: one(organizations, {
+    fields: [invitations.organizationId],
+    references: [organizations.id],
+  }),
+  users: one(users, {
+    fields: [invitations.inviterId],
     references: [users.id],
   }),
 }));

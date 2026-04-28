@@ -1,48 +1,49 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { BatchLinkPlugin, DedupeRequestsPlugin } from "@orpc/client/plugins";
-import { createRouterClient } from "@orpc/server";
-import { createTanstackQueryUtils } from "@orpc/tanstack-query";
-import type { RouterUtils } from "@orpc/tanstack-query";
+import { createTanstackQueryUtils, type RouterUtils } from "@orpc/tanstack-query";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
-import { router } from "@starter/api";
 import type { RouterClient } from "@starter/api";
-import { webEnv } from "@starter/env/web";
+import { webUrls } from "@starter/env/web";
 
 export type ORPCReactUtils = RouterUtils<RouterClient>;
 
+const linkPlugins = [
+  new BatchLinkPlugin({
+    groups: [
+      {
+        condition: () => true,
+        context: {},
+      },
+    ],
+  }),
+  new DedupeRequestsPlugin({
+    groups: [
+      {
+        condition: () => true,
+        context: {},
+      },
+    ],
+  }),
+];
+
 const getORPCClient = createIsomorphicFn()
-  .server(() =>
-    createRouterClient(router, {
-      context: () => ({
-        headers: getRequestHeaders(),
-      }),
-    }),
-  )
+  .server((): RouterClient => {
+    const link = new RPCLink({
+      url: webUrls.rpc,
+      headers: () => Object.fromEntries(getRequestHeaders().entries()),
+      plugins: linkPlugins,
+    });
+
+    return createORPCClient(link);
+  })
   .client((): RouterClient => {
     const link = new RPCLink({
+      url: webUrls.rpc,
       fetch: (url, init) => fetch(url, { ...init, credentials: "include" }),
-      plugins: [
-        new BatchLinkPlugin({
-          groups: [
-            {
-              condition: () => true,
-              context: {},
-            },
-          ],
-        }),
-        new DedupeRequestsPlugin({
-          groups: [
-            {
-              condition: () => true,
-              context: {},
-            },
-          ],
-        }),
-      ],
-      url: import.meta.env.DEV ? window.location.href : `${webEnv.VITE_SERVER_URL}/rpc`,
+      plugins: linkPlugins,
     });
 
     return createORPCClient(link);

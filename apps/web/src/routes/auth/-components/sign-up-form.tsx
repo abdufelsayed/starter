@@ -5,14 +5,15 @@ import { AtSignIcon, EyeIcon, EyeOffIcon, LoaderIcon, MailIcon } from "lucide-re
 import { useState } from "react";
 import { toast } from "sonner"; // Kept for onSuccess toasts
 
-import { webEnv } from "@starter/env/web";
 import { magicLinkSignUpSchema, signUpSchema } from "@starter/schemas/auth";
 import { Button } from "@starter/ui/components/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@starter/ui/components/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@starter/ui/components/field";
 import { Input } from "@starter/ui/components/input";
+import { BrandLogo } from "@starter/ui/components/logos/brand";
 
 import { authClient } from "@/lib/auth";
+import { getAuthCallbackURL } from "@/lib/auth-redirect";
 import { Separator } from "./separator";
 import { Shell } from "./shell";
 import { Socials } from "./socials";
@@ -21,6 +22,7 @@ import { SupportLinks } from "./support-links";
 export function SignUpForm({ className }: { className?: string }) {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
+  const callbackURL = getAuthCallbackURL(search.redirect);
   const [showPasswordMethod, setShowPasswordMethod] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -57,8 +59,8 @@ export function SignUpForm({ className }: { className?: string }) {
         {
           email: value.email,
           name: `${value.firstName} ${value.lastName}`,
-          callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
-          errorCallbackURL: `${webEnv.VITE_WEB_URL}/auth/error`,
+          callbackURL,
+          errorCallbackURL: getAuthCallbackURL("/auth/error"),
         },
         {
           onSuccess: () => {
@@ -86,12 +88,14 @@ export function SignUpForm({ className }: { className?: string }) {
           name: `${value.firstName} ${value.lastName}`,
           email: value.email,
           password: value.password,
-          callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
+          callbackURL,
         },
         {
           onSuccess: async () => {
             toast.success("Account created", {
-              description: "Please check your email to verify your account.",
+              description: import.meta.env.PROD
+                ? "Please check your email to verify your account."
+                : "You can sign in with your new account.",
             });
             await navigate({ to: "/auth/sign-in" });
           },
@@ -124,7 +128,11 @@ export function SignUpForm({ className }: { className?: string }) {
           <div className="flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground md:flex-row md:gap-0">
             <div className="flex items-center gap-1">
               Have an account?{" "}
-              <Link to="/auth/sign-in" className="text-primary hover:underline">
+              <Link
+                to="/auth/sign-in"
+                search={{ redirect: search.redirect }}
+                className="text-primary hover:underline"
+              >
                 Sign in
               </Link>
             </div>
@@ -139,7 +147,7 @@ export function SignUpForm({ className }: { className?: string }) {
     <Shell className={className}>
       <CardHeader className="flex flex-col items-start justify-start">
         <CardTitle className="flex flex-col gap-4">
-          <img src="/logo192.png" alt="Logo" className="size-10" />
+          <BrandLogo className="size-10" />
           <span className="text-xl">Sign up to Starter</span>
         </CardTitle>
         <CardDescription>Welcome! Please fill in the details to get started.</CardDescription>
@@ -411,7 +419,11 @@ export function SignUpForm({ className }: { className?: string }) {
         <div className="flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground md:flex-row md:gap-0">
           <div className="flex items-center gap-1">
             Have an account?{" "}
-            <Link to="/auth/sign-in" className="text-primary hover:underline">
+            <Link
+              to="/auth/sign-in"
+              search={{ redirect: search.redirect }}
+              className="text-primary hover:underline"
+            >
               Sign in
             </Link>
           </div>

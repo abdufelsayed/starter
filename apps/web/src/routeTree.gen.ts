@@ -20,6 +20,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-passw
 import { Route as AuthMagicLinkSentRouteImport } from './routes/auth/magic-link-sent'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthErrorRouteImport } from './routes/auth/error'
+import { Route as AuthAcceptInvitationRouteImport } from './routes/auth/accept-invitation'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as marketingTermsRouteImport } from './routes/(marketing)/terms'
 import { Route as marketingSupportRouteImport } from './routes/(marketing)/support'
@@ -81,6 +82,11 @@ const AuthErrorRoute = AuthErrorRouteImport.update({
   path: '/error',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AuthAcceptInvitationRoute = AuthAcceptInvitationRouteImport.update({
+  id: '/accept-invitation',
+  path: '/accept-invitation',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof marketingSupportRoute
   '/terms': typeof marketingTermsRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/auth/accept-invitation': typeof AuthAcceptInvitationRoute
   '/auth/error': typeof AuthErrorRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/magic-link-sent': typeof AuthMagicLinkSentRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/support': typeof marketingSupportRoute
   '/terms': typeof marketingTermsRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/auth/accept-invitation': typeof AuthAcceptInvitationRoute
   '/auth/error': typeof AuthErrorRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/magic-link-sent': typeof AuthMagicLinkSentRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/(marketing)/support': typeof marketingSupportRoute
   '/(marketing)/terms': typeof marketingTermsRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/auth/accept-invitation': typeof AuthAcceptInvitationRoute
   '/auth/error': typeof AuthErrorRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/magic-link-sent': typeof AuthMagicLinkSentRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/dashboard'
+    | '/auth/accept-invitation'
     | '/auth/error'
     | '/auth/forgot-password'
     | '/auth/magic-link-sent'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/dashboard'
+    | '/auth/accept-invitation'
     | '/auth/error'
     | '/auth/forgot-password'
     | '/auth/magic-link-sent'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/(marketing)/support'
     | '/(marketing)/terms'
     | '/_protected/dashboard'
+    | '/auth/accept-invitation'
     | '/auth/error'
     | '/auth/forgot-password'
     | '/auth/magic-link-sent'
@@ -316,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthErrorRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/auth/accept-invitation': {
+      id: '/auth/accept-invitation'
+      path: '/accept-invitation'
+      fullPath: '/auth/accept-invitation'
+      preLoaderRoute: typeof AuthAcceptInvitationRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -362,6 +381,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthRouteRouteChildren {
+  AuthAcceptInvitationRoute: typeof AuthAcceptInvitationRoute
   AuthErrorRoute: typeof AuthErrorRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthMagicLinkSentRoute: typeof AuthMagicLinkSentRoute
@@ -374,6 +394,7 @@ interface AuthRouteRouteChildren {
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthAcceptInvitationRoute: AuthAcceptInvitationRoute,
   AuthErrorRoute: AuthErrorRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthMagicLinkSentRoute: AuthMagicLinkSentRoute,

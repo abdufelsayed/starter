@@ -1,11 +1,11 @@
 import { createHandlers } from "@starter/api";
 import { auth } from "@starter/auth";
-import { serverEnv } from "@starter/env/server";
+import { serverEnv, serverUrls } from "@starter/env/server";
 
 import { logger } from "./lib/logger";
 
 const { openApiHandler, rpcHandler, corsConfig } = createHandlers({
-  apiUrl: serverEnv.SERVER_URL,
+  apiUrl: serverUrls.api,
   corsOrigin: serverEnv.CORS_ORIGIN,
   isDevelopment: serverEnv.NODE_ENV === "development",
   logger,
@@ -13,15 +13,20 @@ const { openApiHandler, rpcHandler, corsConfig } = createHandlers({
 });
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
-  const isAllowed = origin && corsConfig.origin.includes(origin);
-
-  return {
+  const isAllowedOrigin = origin && corsConfig.origin.includes(origin);
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Credentials": String(corsConfig.credentials),
     "Access-Control-Allow-Headers": corsConfig.allowHeaders.join(", "),
     "Access-Control-Allow-Methods": corsConfig.allowMethods.join(", "),
-    "Access-Control-Allow-Origin": isAllowed ? origin : corsConfig.origin[0],
     "Access-Control-Max-Age": String(corsConfig.maxAge),
+    Vary: "Origin",
   };
+
+  if (isAllowedOrigin) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+
+  return headers;
 }
 
 function addCorsHeaders(response: Response, origin: string | null): Response {
@@ -39,6 +44,27 @@ function addCorsHeaders(response: Response, origin: string | null): Response {
   });
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+async function isNotReadyResponse(response: Response): Promise<boolean> {
+  try {
+    const body: unknown = await response.clone().json();
+    return isRecord(body) && body.status === "not_ready";
+  } catch {
+    return false;
+  }
+}
+
+function withStatus(response: Response, status: number, statusText: string): Response {
+  return new Response(response.body, {
+    headers: response.headers,
+    status,
+    statusText,
+  });
+}
+
 export async function fetch(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const origin = request.headers.get("Origin");
@@ -50,6 +76,10 @@ export async function fetch(request: Request): Promise<Response> {
     });
 
     if (result.matched) {
+      if (url.pathname === "/ready" && (await isNotReadyResponse(result.response))) {
+        return withStatus(result.response, 503, "Service Unavailable");
+      }
+
       return result.response;
     }
   }

@@ -50,7 +50,10 @@ function withAuthTag(operation: unknown): unknown {
 
 export function createCorsConfig(corsOrigin: string): CorsConfig {
   return {
-    origin: corsOrigin.split(","),
+    origin: corsOrigin
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     allowHeaders: ["Content-Type", "Authorization", "x-orpc-batch"],
     allowMethods: ["POST", "GET", "PUT", "DELETE", "OPTIONS"],
     exposeHeaders: ["Content-Length"],

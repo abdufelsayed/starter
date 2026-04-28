@@ -22,7 +22,7 @@ type DocsFrontmatter = {
 export const Route = createFileRoute("/docs/$")({
   component: Page,
   loader: async ({ params }) => {
-    const slugs = params._splat?.split("/") ?? [];
+    const slugs = params["_splat"]?.split("/") ?? [];
     const data = await serverLoader({ data: slugs });
     await clientLoader.preload(data.path);
     return data;

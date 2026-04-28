@@ -5,7 +5,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { ThemeProvider } from "better-themes";
 import { Toaster } from "sonner";
 
-import { webEnv } from "@starter/env/web";
+import { webUrls } from "@starter/env/web";
 import { TooltipProvider } from "@starter/ui/components/tooltip";
 import appCss from "@starter/ui/globals.css?url";
 
@@ -30,8 +30,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         description:
           "A production-ready starter boilerplate with modern tooling for building full-stack web applications, APIs, and automation workflows.",
         keywords: "boilerplate, starter template, full-stack, web development",
-        image: webEnv.VITE_WEB_URL + "/icon.png",
-        url: webEnv.VITE_WEB_URL,
+        image: webUrls.appPath("/icon.png"),
+        url: webUrls.app,
       }),
     ],
     links: [
@@ -55,12 +55,17 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const showDevtools = import.meta.env.DEV;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body className="flex min-h-screen w-full flex-col font-sans antialiased">
+      <body
+        className="flex min-h-screen w-full flex-col font-sans antialiased"
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -70,18 +75,20 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <TooltipProvider>
             {children}
             <Toaster />
-            <TanStackDevtools
-              config={{
-                position: "bottom-left",
-              }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                TanStackQueryDevtools,
-              ]}
-            />
+            {showDevtools ? (
+              <TanStackDevtools
+                config={{
+                  position: "bottom-left",
+                }}
+                plugins={[
+                  {
+                    name: "Tanstack Router",
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                  TanStackQueryDevtools,
+                ]}
+              />
+            ) : null}
           </TooltipProvider>
         </ThemeProvider>
         <Scripts />

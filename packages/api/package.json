@@ -9,7 +9,8 @@
     }
   },
   "scripts": {
-    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo"
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@opentelemetry/api": "catalog:otel",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",
+    "@types/bun": "catalog:build",
     "@typescript/native-preview": "catalog:build"
   }
 }

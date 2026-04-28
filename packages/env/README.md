@@ -10,6 +10,9 @@ Type-safe environment variable configuration.
 ## Exports
 
 ```ts
-import { serverEnv } from "@starter/env/server"; // Server environment
-import { webEnv } from "@starter/env/web"; // Web environment (VITE_ prefix)
+import { serverEnv, serverUrls } from "@starter/env/server"; // Server environment and URLs
+import { webEnv, webUrls } from "@starter/env/web"; // Web environment and URLs
 ```
+
+Use `API_URL` on the server and `VITE_API_URL` in the web app for the backend origin.
+`SERVER_URL` and `VITE_SERVER_URL` are accepted as compatibility fallbacks.

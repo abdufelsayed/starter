@@ -2,10 +2,13 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { authClient } from "@/lib/auth";
+import { getSafeRedirectPath } from "@/lib/auth-redirect";
 
 export const Route = createFileRoute("/auth")({
   beforeLoad: async ({ context, location }) => {
-    if (location.pathname === "/auth/error") return;
+    if (location.pathname === "/auth/error" || location.pathname === "/auth/accept-invitation") {
+      return;
+    }
     const session = await context.queryClient.ensureQueryData(authClient.getSession.queryOptions());
     if (session) {
       throw redirect({ to: "/" });
@@ -19,7 +22,7 @@ export const Route = createFileRoute("/auth")({
     return { lastUsedLoginMethod };
   },
   validateSearch: z.object({
-    redirect: z.string().optional(),
+    redirect: z.string().optional().transform(getSafeRedirectPath),
   }),
 });
 

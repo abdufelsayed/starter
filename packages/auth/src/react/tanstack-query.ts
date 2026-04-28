@@ -84,7 +84,7 @@ function unwrap(result: any) {
   return result && typeof result === "object" && "data" in result ? result.data : result;
 }
 
-// ── Runtime proxy ──
+// ── Runtime wrapper ──
 
 const proxyTarget = function proxyTarget() {};
 

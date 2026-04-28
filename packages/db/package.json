@@ -11,13 +11,16 @@
     "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
     "db:generate": "bun with-env bun run drizzle-kit generate",
     "db:migrate": "bun with-env bun run drizzle-kit migrate",
+    "db:migrate:drop": "bun with-env bun run drizzle-kit drop",
     "db:pull": "bun with-env bun run drizzle-kit pull",
     "db:push": "bun with-env bun run drizzle-kit push",
     "db:studio": "bun with-env bun run drizzle-kit studio",
-    "with-env": "dotenv -e ../../apps/server/.env.local --"
+    "with-env": "dotenv -e ../../apps/server/.env.local --",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@starter/env": "workspace:*",
+    "@starter/shared": "workspace:*",
     "drizzle-orm": "catalog:db",
     "pg": "catalog:db"
   },
@@ -25,6 +28,7 @@
     "@starter/tsconfig": "workspace:*",
     "@types/pg": "catalog:db",
     "@typescript/native-preview": "catalog:build",
+    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "catalog:db"
   }
 }

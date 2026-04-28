@@ -417,7 +417,7 @@ function DataGridTableRowSelect<TData>({ row }: { row: Row<TData> }) {
       ></div>
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        onCheckedChange={(value) => row.toggleSelected(value)}
         aria-label="Select row"
         className="align-[inherit]"
       />
@@ -436,21 +436,21 @@ function DataGridTableRowSelectAll() {
       checked={isAllSelected}
       indeterminate={isSomeSelected && !isAllSelected}
       disabled={isLoading || recordCount === 0}
-      onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+      onCheckedChange={(value) => table.toggleAllPageRowsSelected(value)}
       aria-label="Select all"
       className="align-[inherit]"
     />
   );
 }
 
-function DataGridTable<TData>() {
+function DataGridTable() {
   const { table, isLoading, props } = useDataGrid();
   const pagination = table.getState().pagination;
 
   return (
     <DataGridTableBase>
       <DataGridTableHead>
-        {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
+        {table.getHeaderGroups().map((headerGroup, index) => {
           return (
             <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
               {headerGroup.headers.map((header, index) => {
@@ -519,11 +519,11 @@ function DataGridTable<TData>() {
           </tr>
         ) : table.getRowModel().rows.length ? (
           // Show actual data when not loading
-          table.getRowModel().rows.map((row: Row<TData>, index) => {
+          table.getRowModel().rows.map((row, index) => {
             return (
               <Fragment key={row.id}>
                 <DataGridTableBodyRow row={row} key={index}>
-                  {row.getVisibleCells().map((cell: Cell<TData, unknown>, colIndex) => {
+                  {row.getVisibleCells().map((cell, colIndex) => {
                     return (
                       <DataGridTableBodyRowCell cell={cell} key={colIndex}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

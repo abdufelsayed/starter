@@ -30,9 +30,12 @@ Create `.env.local`:
 
 ```env
 VITE_API_URL=http://localhost:8080
-VITE_SERVER_URL=https://api.your-domain.com
-VITE_SENTRY_DSN=
-AXIOM_TOKEN=
+VITE_WEB_URL=http://localhost:3000
+VITE_SENTRY_DSN=https://public@example.ingest.sentry.io/1
+VITE_APP_VERSION=dev
+AXIOM_TOKEN=xaat-dev-placeholder-token
 AXIOM_ENDPOINT=https://api.axiom.co
 AXIOM_DATASET=starter-web
+OTEL_SERVICE_NAME=starter-web
+OTEL_SERVICE_VERSION=1.0.0
 ```

@@ -5,18 +5,17 @@ import mdx from "fumadocs-mdx/vite";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import type { PluginOption } from "vite";
-import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   server: {
-    port: 3001,
+    port: 4000,
   },
   plugins: [
     mdx(await import("./source.config")),
     tailwindcss(),
-    tsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
     tanstackStart({
       prerender: {
         enabled: true,

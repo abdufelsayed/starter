@@ -20,7 +20,7 @@ const getAuthClient = createIsomorphicFn()
 // On the client, cache the singleton (browser handles cookies automatically).
 // On the server, create a fresh client per access so getRequestHeaders() returns
 // the current request's cookies instead of stale ones from module load time.
-let _cached: AuthClient | undefined;
+let cachedAuthClient: AuthClient | undefined;
 
 const authClientTarget = createAuthClient({
   credentials: "include",
@@ -29,8 +29,8 @@ const authClientTarget = createAuthClient({
 export const authClient = new Proxy(authClientTarget, {
   get(_, prop, receiver) {
     if (typeof window !== "undefined") {
-      _cached ??= getAuthClient();
-      return Reflect.get(_cached, prop, receiver);
+      cachedAuthClient ??= getAuthClient();
+      return Reflect.get(cachedAuthClient, prop, receiver);
     }
     return Reflect.get(getAuthClient(), prop, receiver);
   },

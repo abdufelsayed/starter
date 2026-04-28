@@ -6,7 +6,8 @@
     "build": "tsdown",
     "clean": "git clean -xdf build node_modules dist .turbo .tsbuildinfo",
     "dev": "bun --watch src/server.ts",
-    "start": "bun --import ./dist/instrument.server.mjs ./dist/server.mjs"
+    "start": "bun --import ./dist/instrument.server.mjs ./dist/server.mjs",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@opentelemetry/api": "catalog:otel",
@@ -23,6 +24,6 @@
     "@types/bun": "catalog:build",
     "@typescript/native-preview": "catalog:build",
     "pino-pretty": "catalog:logging",
-    "tsdown": "^0.19.0-beta.1"
+    "tsdown": "^0.21.10"
   }
 }

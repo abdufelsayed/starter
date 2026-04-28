@@ -7,7 +7,9 @@
     "clean": "git clean -xdf .output node_modules dist .turbo .tanstack .tsbuildinfo",
     "dev": "bun --bun vite dev --port 3000",
     "preview": "bun --bun vite preview",
-    "start": "bun --import ./.output/server/instrument.server.js .output/server/index.mjs"
+    "start": "bun --import ./.output/server/instrument.server.js .output/server/index.mjs",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@opentelemetry/instrumentation-http": "catalog:otel",
@@ -34,10 +36,11 @@
     "react-dom": "catalog:react",
     "react-qr-code": "^2.0.18",
     "sonner": "catalog:ui",
-    "ua-parser-js": "^2.0.8",
+    "ua-parser-js": "^2.0.9",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@rolldown/plugin-babel": "^0.2.3",
     "@starter/tsconfig": "workspace:*",
     "@tailwindcss/vite": "catalog:tailwind",
     "@tanstack/devtools-vite": "catalog:tanstack",
@@ -56,7 +59,6 @@
     "nitro": "catalog:build",
     "pino-pretty": "catalog:logging",
     "vite": "catalog:build",
-    "vite-tsconfig-paths": "catalog:build",
     "vitest": "catalog:testing"
   }
 }

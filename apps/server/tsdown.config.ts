@@ -5,6 +5,6 @@ export default defineConfig({
   format: ["esm"],
   clean: true,
   outDir: "dist",
-  target: "es2022",
+  target: "es2023",
   minify: true,
 });

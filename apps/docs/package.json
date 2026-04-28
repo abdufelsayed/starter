@@ -8,16 +8,16 @@
     "build": "vite build",
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
-    "types:check": "fumadocs-mdx && tsc --noEmit",
-    "postinstall": "fumadocs-mdx",
+    "typecheck": "${BUN_INSTALL:-$HOME/.bun}/bin/bun --bun fumadocs-mdx && tsgo --noEmit",
+    "postinstall": "${BUN_INSTALL:-$HOME/.bun}/bin/bun --bun fumadocs-mdx",
     "clean": "git clean -xdf .output node_modules dist .turbo .tanstack .source .tsbuildinfo"
   },
   "dependencies": {
     "@tanstack/react-router": "catalog:tanstack",
     "@tanstack/react-start": "catalog:tanstack",
-    "fumadocs-core": "16.6.5",
-    "fumadocs-mdx": "14.2.8",
-    "fumadocs-ui": "16.6.5",
+    "fumadocs-core": "16.8.5",
+    "fumadocs-mdx": "14.3.2",
+    "fumadocs-ui": "16.8.5",
     "lucide-react": "catalog:ui",
     "react": "catalog:react",
     "react-dom": "catalog:react",
@@ -34,9 +34,8 @@
     "@typescript/native-preview": "catalog:build",
     "@vitejs/plugin-react": "catalog:build",
     "nitro": "catalog:build",
-    "srvx": "^0.11.5",
+    "srvx": "^0.11.15",
     "tailwindcss": "catalog:tailwind",
-    "vite": "catalog:build",
-    "vite-tsconfig-paths": "catalog:build"
+    "vite": "catalog:build"
   }
 }

@@ -9,15 +9,16 @@
   },
   "scripts": {
     "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
-    "dev": "email dev -p 3001 --dir ./src"
+    "dev": "email dev -p 3001 --dir ./src",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
-    "@react-email/components": "^1.0.1",
+    "@react-email/components": "^1.0.12",
     "@starter/env": "workspace:*",
     "react": "catalog:react",
     "react-dom": "catalog:react",
-    "react-email": "^5.0.8",
-    "resend": "^6.6.0"
+    "react-email": "^6.0.1",
+    "resend": "^6.12.2"
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",

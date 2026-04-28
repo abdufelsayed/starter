@@ -7,7 +7,8 @@
     "./react": "./src/react/index.ts"
   },
   "scripts": {
-    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo"
+    "clean": "git clean -xdf node_modules dist .turbo .tsbuildinfo",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@better-auth/stripe": "catalog:auth",

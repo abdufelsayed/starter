@@ -35,14 +35,22 @@ bun typecheck  # Run type checking
 Create `.env.local`:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+DATABASE_URL=postgresql://user:password@localhost:5432/postgres
 PORT=8080
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-SENTRY_DSN=
-AXIOM_TOKEN=
+GOOGLE_CLIENT_ID=google-client-id
+GOOGLE_CLIENT_SECRET=google-client-secret
+GITHUB_CLIENT_ID=github-client-id
+GITHUB_CLIENT_SECRET=github-client-secret
+RESEND_API_KEY=re_dev_placeholder
+BETTER_AUTH_SECRET=dev-better-auth-secret-at-least-32-characters
+STRIPE_SECRET_KEY=sk_test_placeholder
+STRIPE_WEBHOOK_SECRET=whsec_placeholder
+STRIPE_PRO_PRICE_ID=price_pro_monthly_placeholder
+STRIPE_PRO_ANNUAL_PRICE_ID=price_pro_annual_placeholder
+STRIPE_MAX_PRICE_ID=price_max_monthly_placeholder
+STRIPE_MAX_ANNUAL_PRICE_ID=price_max_annual_placeholder
+SENTRY_DSN=https://public@example.ingest.sentry.io/1
+AXIOM_TOKEN=xaat-dev-placeholder-token
 AXIOM_DATASET=starter-server
 CORS_ORIGIN=http://localhost:3000
 CORS_HOST=http://localhost:3000

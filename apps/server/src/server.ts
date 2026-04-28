@@ -1,4 +1,4 @@
-import { serverEnv } from "@starter/env/server";
+import { serverEnv, serverUrls } from "@starter/env/server";
 
 import { fetch } from ".";
 import { logger } from "./lib/logger";
@@ -12,5 +12,5 @@ Bun.serve({
 });
 
 logger.info("Server started");
-logger.info(`Server: http://localhost:${serverEnv.PORT}`);
-logger.info(`API Reference: http://localhost:${serverEnv.PORT}/api/reference`);
+logger.info(`Server: ${serverUrls.api}`);
+logger.info(`API Reference: ${serverUrls.apiPath("/api/reference")}`);

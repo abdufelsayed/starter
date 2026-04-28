@@ -1,6 +1,8 @@
 {
   "extends": "@starter/tsconfig/react-library.json",
   "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
     "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo",
     "paths": {

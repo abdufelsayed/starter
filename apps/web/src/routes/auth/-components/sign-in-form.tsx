@@ -5,7 +5,6 @@ import { AtSignIcon, EyeIcon, EyeOffIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { webEnv } from "@starter/env/web";
 import { magicLinkSignInSchema, signInSchema } from "@starter/schemas/auth";
 import { Badge } from "@starter/ui/components/badge";
 import { Button } from "@starter/ui/components/button";
@@ -13,8 +12,10 @@ import { CardContent, CardDescription, CardHeader, CardTitle } from "@starter/ui
 import { Checkbox } from "@starter/ui/components/checkbox";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@starter/ui/components/field";
 import { Input } from "@starter/ui/components/input";
+import { BrandLogo } from "@starter/ui/components/logos/brand";
 
 import { authClient } from "@/lib/auth";
+import { getAuthCallbackURL } from "@/lib/auth-redirect";
 import { Separator } from "./separator";
 import { Shell } from "./shell";
 import { Socials } from "./socials";
@@ -23,6 +24,7 @@ import { SupportLinks } from "./support-links";
 export function SignInForm({ className }: { className?: string }) {
   const { lastUsedLoginMethod } = useLoaderData({ from: "/auth" });
   const search = useSearch({ from: "/auth" });
+  const callbackURL = getAuthCallbackURL(search.redirect);
   const navigate = useNavigate();
   const [showPasswordMethod, setShowPasswordMethod] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -59,8 +61,8 @@ export function SignInForm({ className }: { className?: string }) {
       await signInMagicLink.mutateAsync(
         {
           email: value.email,
-          callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
-          errorCallbackURL: `${webEnv.VITE_WEB_URL}/auth/error`,
+          callbackURL,
+          errorCallbackURL: getAuthCallbackURL("/auth/error"),
         },
         {
           onSuccess: async () => {
@@ -84,26 +86,12 @@ export function SignInForm({ className }: { className?: string }) {
       rememberMe: false,
     },
     onSubmit: async ({ value }) => {
-      await signIn.mutateAsync(
-        {
-          email: value.email,
-          password: value.password,
-          rememberMe: value.rememberMe,
-          callbackURL: search.redirect ?? webEnv.VITE_WEB_URL,
-        },
-        {
-          onSuccess: async (data) => {
-            if (!data) return;
-
-            if (data.redirect) {
-              await navigate({
-                to: "/auth/verify-2fa",
-                search: { redirect: search.redirect },
-              });
-            }
-          },
-        },
-      );
+      await signIn.mutateAsync({
+        email: value.email,
+        password: value.password,
+        rememberMe: value.rememberMe,
+        callbackURL,
+      });
     },
     validators: {
       onChange: signInSchema,
@@ -114,7 +102,7 @@ export function SignInForm({ className }: { className?: string }) {
     <Shell className={className}>
       <CardHeader className="flex flex-col items-start justify-start">
         <CardTitle className="flex flex-col gap-4">
-          <img src="/logo192.png" alt="Logo" className="size-10" />
+          <BrandLogo className="size-10" />
           <span className="text-xl">Sign in to Starter</span>
         </CardTitle>
         <CardDescription>Welcome back! Please sign in to continue</CardDescription>
@@ -316,7 +304,11 @@ export function SignInForm({ className }: { className?: string }) {
         <div className="flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground md:flex-row md:gap-0">
           <div className="flex items-center gap-1">
             No account?{" "}
-            <Link to="/auth/sign-up" className="text-primary hover:underline">
+            <Link
+              to="/auth/sign-up"
+              search={{ redirect: search.redirect }}
+              className="text-primary hover:underline"
+            >
               Sign up
             </Link>
           </div>

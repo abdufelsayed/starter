@@ -4,7 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { LoaderIcon } from "lucide-react";
 import { toast } from "sonner"; // Kept for onSuccess toast
 
-import { webEnv } from "@starter/env/web";
+import { webUrls } from "@starter/env/web";
 import { forgotPasswordSchema } from "@starter/schemas/auth";
 import { Button } from "@starter/ui/components/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@starter/ui/components/card";
@@ -33,7 +33,7 @@ export function ForgotPasswordForm({ className }: { className?: string }) {
       await requestPasswordReset.mutateAsync(
         {
           email: value.email,
-          redirectTo: `${webEnv.VITE_WEB_URL}/auth/reset-password`,
+          redirectTo: webUrls.appPath("/auth/reset-password"),
         },
         {
           onSuccess: async () => {

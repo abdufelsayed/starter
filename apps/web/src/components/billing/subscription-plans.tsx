@@ -4,7 +4,7 @@ import { CheckIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { webEnv } from "@starter/env/web";
+import { webUrls } from "@starter/env/web";
 import { PLANS, TRIAL_DAYS, type PlanName } from "@starter/schemas/billing";
 import { Badge } from "@starter/ui/components/badge";
 import { Button, buttonVariants } from "@starter/ui/components/button";
@@ -279,7 +279,7 @@ function PlanAction({
           size="sm"
           className="w-full"
           disabled={portal.isPending}
-          onClick={() => portal.mutate({ returnUrl: `${webEnv.VITE_WEB_URL}/pricing` })}
+          onClick={() => portal.mutate({ returnUrl: webUrls.appPath("/pricing") })}
         >
           {portal.isPending && <LoaderIcon className="mr-1 size-3 animate-spin" />}
           Manage Subscription
@@ -291,7 +291,7 @@ function PlanAction({
           disabled={cancel.isPending}
           onClick={() =>
             cancel.mutate({
-              returnUrl: `${webEnv.VITE_WEB_URL}/pricing`,
+              returnUrl: webUrls.appPath("/pricing"),
               ...(currentSubscriptionId ? { subscriptionId: currentSubscriptionId } : {}),
             })
           }
@@ -313,9 +313,9 @@ function PlanAction({
         upgrade.mutate({
           annual,
           ...(currentSubscriptionId ? { subscriptionId: currentSubscriptionId } : {}),
-          cancelUrl: `${webEnv.VITE_WEB_URL}/pricing`,
+          cancelUrl: webUrls.appPath("/pricing"),
           plan: planKey,
-          successUrl: `${webEnv.VITE_WEB_URL}/dashboard`,
+          successUrl: webUrls.appPath("/dashboard"),
         })
       }
     >

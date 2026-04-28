@@ -8,10 +8,8 @@ export const Route = createFileRoute("/_protected/dashboard")({
 
 function RouteComponent() {
   return (
-    <div className="flex h-screen w-full justify-center pt-20">
-      <div>
-        <AccountSettings />
-      </div>
+    <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
+      <AccountSettings />
     </div>
   );
 }

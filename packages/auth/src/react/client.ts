@@ -3,34 +3,43 @@ import {
   adminClient,
   lastLoginMethodClient,
   magicLinkClient,
+  organizationClient,
   twoFactorClient,
 } from "better-auth/client/plugins";
 import { createAuthClient as createBetterAuthClient } from "better-auth/react";
 
-import { webEnv } from "@starter/env/web";
+import { webUrls } from "@starter/env/web";
 
 import { tanstackQuery, type TanstackQueryClient } from "./tanstack-query";
 
 type FetchOptions = NonNullable<Parameters<typeof createBetterAuthClient>[0]>["fetchOptions"];
 
-function createBetterAuth(fetchOptions?: FetchOptions) {
-  const baseURL =
-    typeof window !== "undefined" && import.meta.env.DEV
-      ? window.location.origin
-      : webEnv.VITE_SERVER_URL;
+function getTwoFactorRedirectURL() {
+  const url = new URL(webUrls.appPath("/auth/verify-2fa"));
+  const current = new URL(window.location.href);
+  const redirect = current.searchParams.get("redirect");
 
+  if (redirect) {
+    url.searchParams.set("redirect", redirect);
+  }
+
+  return url.toString();
+}
+
+function createBetterAuth(fetchOptions?: FetchOptions) {
   return createBetterAuthClient({
-    baseURL,
+    baseURL: webUrls.api,
     basePath: "/api/auth",
     fetchOptions,
     plugins: [
       adminClient(),
       twoFactorClient({
         onTwoFactorRedirect() {
-          window.location.href = `${webEnv.VITE_WEB_URL}/auth/verify-2fa`;
+          window.location.href = getTwoFactorRedirectURL();
         },
       }),
       magicLinkClient(),
+      organizationClient(),
       stripeClient({
         subscription: true,
       }),

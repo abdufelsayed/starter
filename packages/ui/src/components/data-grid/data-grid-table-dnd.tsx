@@ -11,13 +11,7 @@ import {
 } from "@dnd-kit/core";
 import { horizontalListSortingStrategy, SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  type Cell,
-  flexRender,
-  type Header,
-  type HeaderGroup,
-  type Row,
-} from "@tanstack/react-table";
+import { type Cell, flexRender, type Header } from "@tanstack/react-table";
 import { GripVerticalIcon } from "lucide-react";
 import { type CSSProperties, Fragment, useId, useRef } from "react";
 
@@ -111,11 +105,7 @@ function DataGridTableDndCell<TData>({ cell }: { cell: Cell<TData, unknown> }) {
   );
 }
 
-function DataGridTableDnd<TData>({
-  handleDragEnd,
-}: {
-  handleDragEnd: (event: DragEndEvent) => void;
-}) {
+function DataGridTableDnd({ handleDragEnd }: { handleDragEnd: (event: DragEndEvent) => void }) {
   const { table, isLoading, props } = useDataGrid();
   const pagination = table.getState().pagination;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -156,7 +146,7 @@ function DataGridTableDnd<TData>({
       <div ref={containerRef}>
         <DataGridTableBase>
           <DataGridTableHead>
-            {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
+            {table.getHeaderGroups().map((headerGroup, index) => {
               return (
                 <DataGridTableHeadRow headerGroup={headerGroup} key={index}>
                   <SortableContext
@@ -190,11 +180,11 @@ function DataGridTableDnd<TData>({
                 </DataGridTableBodyRowSkeleton>
               ))
             ) : table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row: Row<TData>) => {
+              table.getRowModel().rows.map((row) => {
                 return (
                   <Fragment key={row.id}>
                     <DataGridTableBodyRow row={row}>
-                      {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {
+                      {row.getVisibleCells().map((cell) => {
                         return (
                           <SortableContext
                             key={cell.id}
