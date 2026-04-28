@@ -2,6 +2,9 @@
 
 Documentation site built with Fumadocs.
 
+This README is explanatory. The strict implementation contract for agents is
+[`apps/docs/AGENTS.md`](./AGENTS.md).
+
 ## Stack
 
 - [Fumadocs](https://fumadocs.vercel.app) - Documentation framework

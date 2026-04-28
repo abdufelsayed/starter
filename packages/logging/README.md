@@ -2,6 +2,9 @@
 
 Structured logging and OpenTelemetry instrumentation.
 
+This README is explanatory. The strict implementation contract for agents is
+[`packages/logging/AGENTS.md`](./AGENTS.md).
+
 ## Stack
 
 - [Pino](https://getpino.io) - JSON logger
@@ -11,6 +14,6 @@ Structured logging and OpenTelemetry instrumentation.
 ## Exports
 
 ```ts
-import { logger } from "@starter/logging"
-import { ... } from "@starter/logging/instrumentation"
+import { createLogger } from "@starter/logging";
+import { createAxiomExporter, setupGracefulShutdown } from "@starter/logging/instrumentation";
 ```

@@ -13,5 +13,5 @@ pre-commit:
 
     - name: Lint
       run: bun lint:fix {staged_files}
-      glob: "*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,json,jsonc,css,graphql,gql}"
+      glob: "*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}"
       stage_fixed: true

@@ -2,6 +2,9 @@
 
 Shared utilities.
 
+This README is explanatory. The strict implementation contract for agents is
+[`packages/shared/AGENTS.md`](./AGENTS.md).
+
 ## Exports
 
 ```ts

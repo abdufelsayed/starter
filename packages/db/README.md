@@ -1,12 +1,40 @@
 # @starter/db
 
-Database layer with Drizzle ORM and PostgreSQL.
+Database package for the Drizzle client, PostgreSQL schema, migrations, and database-only helpers.
 
-## Stack
+The strict implementation contract for agents is [`packages/db/AGENTS.md`](./AGENTS.md).
 
-- [Drizzle ORM](https://orm.drizzle.team) - Type-safe SQL ORM
-- [PostgreSQL](https://postgresql.org) via `pg` driver
-- [Drizzle Kit](https://orm.drizzle.team/kit-docs/overview) - Migrations and studio
+## Responsibilities
+
+- Define Drizzle tables, indexes, relations, and schema exports.
+- Provide the configured database client.
+- Provide reusable database primitives such as cursor pagination.
+- Own migration generation and migration metadata.
+
+Application business behavior belongs behind backend API boundaries, not in frontend apps.
+
+## Layout
+
+```txt
+src/
+  index.ts
+  schema/
+    index.ts
+    auth.ts
+    projects.ts
+  utils/
+    pagination.ts
+```
+
+Use one schema file per domain when adding domain data.
+
+## Schema Guidelines
+
+- Add indexes for ownership scopes, common filters, foreign keys, and API sort keys.
+- Define relations near the tables they connect.
+- Keep schema modules side-effect free.
+- Export new schema files from `src/schema/index.ts`.
+- Generate migrations when schema changes.
 
 ## Scripts
 
@@ -21,7 +49,7 @@ bun db:studio    # Open Drizzle Studio
 ## Exports
 
 ```ts
-import { db } from "@starter/db";
+import { db, eq, and, sql } from "@starter/db";
 ```
 
-Exports the database client and re-exports Drizzle utilities.
+The package exports the database client and Drizzle utilities.

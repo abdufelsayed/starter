@@ -2,6 +2,9 @@
 
 Shared TypeScript configurations.
 
+This README is explanatory. The strict implementation contract for agents is
+[`tooling/tsconfig/AGENTS.md`](./AGENTS.md).
+
 ## Configs
 
 | Config                | Use case            |

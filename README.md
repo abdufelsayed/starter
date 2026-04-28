@@ -11,8 +11,10 @@ A modern, production-ready full-stack monorepo boilerplate.
   - [TanStack Router](https://tanstack.com/router) - Type-safe routing
   - [TanStack Query](https://tanstack.com/query) - Data fetching
   - [TanStack Form](https://tanstack.com/form) - Form management
+  - [TanStack Table](https://tanstack.com/table) - Data grids and table state
   - [React 19](https://react.dev)
   - [Tailwind CSS v4](https://tailwindcss.com)
+  - shadcn/ui-style components with Base UI primitives
   - [better-themes](https://www.npmjs.com/package/better-themes) - Theme management
 - **Backend:**
   - [Bun.serve()](https://bun.sh/docs/api/http) - Native HTTP server
@@ -20,12 +22,16 @@ A modern, production-ready full-stack monorepo boilerplate.
   - [Better Auth](https://better-auth.com) - Authentication
   - [Drizzle ORM](https://orm.drizzle.team) - Type-safe SQL ORM
   - [PostgreSQL](https://postgresql.org)
+- **Product Infrastructure:**
+  - [Stripe](https://stripe.com) via Better Auth billing
+  - [React Email](https://react.email) + [Resend](https://resend.com)
+  - [Fumadocs](https://fumadocs.vercel.app) documentation app
 - **Observability:**
   - [OpenTelemetry](https://opentelemetry.io) - Distributed tracing
   - [Sentry](https://sentry.io) - Error tracking
   - [Pino](https://getpino.io) + [Axiom](https://axiom.co) - Logging
 - **Tooling:**
-  - [TypeScript 5.9](https://typescriptlang.org)
+  - TypeScript native preview (`tsgo`)
   - [oxlint](https://oxc-project.github.io) - Linter
   - [oxfmt](https://oxc-project.github.io) - Formatter
   - [Lefthook](https://github.com/evilmartians/lefthook) - Git hooks
@@ -39,7 +45,7 @@ starter/
 │   ├── server/        # Bun.serve() backend API (port 8080)
 │   └── docs/          # Fumadocs documentation site (port 4000)
 ├── packages/
-│   ├── api/           # oRPC router, middleware, and handlers
+│   ├── api/           # oRPC contracts, routers, middleware, and handlers
 │   ├── auth/          # Better Auth config (email/password, Google OAuth, Stripe)
 │   ├── db/            # Drizzle ORM schema and migrations
 │   ├── email/         # React Email templates + Resend
@@ -47,7 +53,7 @@ starter/
 │   ├── logging/       # Pino logger + OpenTelemetry
 │   ├── schemas/       # Shared Zod validation schemas
 │   ├── shared/        # Shared utilities (nanoid)
-│   └── ui/            # Component library (shadcn/ui)
+│   └── ui/            # Product-agnostic UI primitives and data-grid pieces
 └── tooling/
     └── tsconfig/      # Shared TypeScript configurations
 ```
@@ -56,7 +62,7 @@ starter/
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) 1.3.5+
+- [Bun](https://bun.sh) 1.3.x
 - [Node.js](https://nodejs.org) 22+
 - PostgreSQL
 
@@ -64,10 +70,20 @@ starter/
 
 ```bash
 bun install
-# configure apps/server/.env.local and apps/web/.env.local
+
+cp apps/server/.env.example apps/server/.env.local
+cp apps/web/.env.example apps/web/.env.local
+# Edit the copied env files for your local infrastructure.
+
 bun db:push
 bun dev
 ```
+
+## Agent Documentation
+
+The repo-wide agent contract starts in [AGENTS.md](./AGENTS.md). More specific `AGENTS.md` files in
+apps and packages override the root rules for their subtree. Treat scoped agent instructions as
+stricter than READMEs.
 
 ### Scripts
 
