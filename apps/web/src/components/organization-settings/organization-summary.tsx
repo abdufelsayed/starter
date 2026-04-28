@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
 import { ArrowRightIcon, Building2Icon, LoaderIcon, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,8 +26,9 @@ export function OrganizationSummary({
   onCreate?: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { data: session } = useSuspenseQuery(authClient.getSession.queryOptions());
-  const { data: organizations } = useSuspenseQuery(authClient.organization.list.queryOptions());
+  const [{ data: session }, { data: organizations }] = useSuspenseQueries({
+    queries: [authClient.getSession.queryOptions(), authClient.organization.list.queryOptions()],
+  });
   const activeOrganization = organizations?.find(
     (organization) => organization.id === session?.session.activeOrganizationId,
   );

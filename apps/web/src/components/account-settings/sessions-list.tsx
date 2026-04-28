@@ -1,4 +1,4 @@
-import { useMutation, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { ArrowRightIcon, Laptop, Loader2, Smartphone } from "lucide-react";
 import { toast } from "sonner";
@@ -19,8 +19,9 @@ import { authClient } from "@/lib/auth";
 export function SessionsList({ onBack }: { onBack?: () => void }) {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { data: sessionData } = useSuspenseQuery(authClient.getSession.queryOptions());
-  const { data: sessions } = useSuspenseQuery(authClient.listSessions.queryOptions());
+  const [{ data: sessionData }, { data: sessions }] = useSuspenseQueries({
+    queries: [authClient.getSession.queryOptions(), authClient.listSessions.queryOptions()],
+  });
   const revokeSession = useMutation(
     authClient.revokeSession.mutationOptions({
       onSuccess: async () => {

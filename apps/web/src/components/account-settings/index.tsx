@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import {
   ArrowLeftIcon,
@@ -146,8 +146,9 @@ export function AccountSettings() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [activeView, setActiveView] = useState<SettingsView | null>(null);
-  const { data: session } = useSuspenseQuery(authClient.getSession.queryOptions());
-  const { data: organizations } = useSuspenseQuery(authClient.organization.list.queryOptions());
+  const [{ data: session }, { data: organizations }] = useSuspenseQueries({
+    queries: [authClient.getSession.queryOptions(), authClient.organization.list.queryOptions()],
+  });
   const activeOrganization = organizations?.find(
     (organization) => organization.id === session?.session.activeOrganizationId,
   );

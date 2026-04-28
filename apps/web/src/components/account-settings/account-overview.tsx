@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { ArrowRightIcon, MailIcon, ShieldCheckIcon, UserIcon } from "lucide-react";
 
 import { Badge } from "@starter/ui/components/badge";
@@ -15,8 +15,9 @@ import {
 import { authClient } from "@/lib/auth";
 
 export function AccountOverview({ onBack }: { onBack?: () => void }) {
-  const { data: session } = useSuspenseQuery(authClient.getSession.queryOptions());
-  const { data: accounts } = useSuspenseQuery(authClient.listAccounts.queryOptions());
+  const [{ data: session }, { data: accounts }] = useSuspenseQueries({
+    queries: [authClient.getSession.queryOptions(), authClient.listAccounts.queryOptions()],
+  });
 
   const linkedProviders = accounts?.filter((account) => account.providerId !== "credential") ?? [];
 

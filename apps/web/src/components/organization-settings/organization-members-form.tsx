@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
 import { ArrowRightIcon, LoaderIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -57,13 +57,13 @@ const inviteMemberSchema = z.object({
 
 export function OrganizationMembersForm({ onBack }: { onBack?: () => void }) {
   const queryClient = useQueryClient();
-  const { data: session } = useSuspenseQuery(authClient.getSession.queryOptions());
-  const { data: membersData } = useSuspenseQuery(
-    authClient.organization.listMembers.queryOptions(),
-  );
-  const { data: activeRoleData } = useSuspenseQuery(
-    authClient.organization.getActiveMemberRole.queryOptions(),
-  );
+  const [{ data: session }, { data: membersData }, { data: activeRoleData }] = useSuspenseQueries({
+    queries: [
+      authClient.getSession.queryOptions(),
+      authClient.organization.listMembers.queryOptions(),
+      authClient.organization.getActiveMemberRole.queryOptions(),
+    ],
+  });
 
   const inviteMember = useMutation(
     authClient.organization.inviteMember.mutationOptions({

@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
 import { ArrowRightIcon, Building2Icon, LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -54,13 +54,13 @@ const organizationSettingsSchema = z.object({
 
 export function OrganizationSettingsForm({ onBack }: { onBack?: () => void }) {
   const queryClient = useQueryClient();
-  const { data: session } = useSuspenseQuery(authClient.getSession.queryOptions());
-  const { data: organization } = useSuspenseQuery(
-    authClient.organization.getFullOrganization.queryOptions(),
-  );
-  const { data: activeRole } = useSuspenseQuery(
-    authClient.organization.getActiveMemberRole.queryOptions(),
-  );
+  const [{ data: session }, { data: organization }, { data: activeRole }] = useSuspenseQueries({
+    queries: [
+      authClient.getSession.queryOptions(),
+      authClient.organization.getFullOrganization.queryOptions(),
+      authClient.organization.getActiveMemberRole.queryOptions(),
+    ],
+  });
 
   const updateOrganization = useMutation(
     authClient.organization.update.mutationOptions({
