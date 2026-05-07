@@ -17,8 +17,8 @@
     "@starter/env": "workspace:*",
     "react": "catalog:react",
     "react-dom": "catalog:react",
-    "react-email": "^6.0.1",
-    "resend": "^6.12.2"
+    "react-email": "^6.1.1",
+    "resend": "^6.12.3"
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",

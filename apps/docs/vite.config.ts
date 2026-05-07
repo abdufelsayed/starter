@@ -10,6 +10,14 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  ssr: {
+    external: ["tslib"],
+  },
+  build: {
+    rollupOptions: {
+      external: ["tslib"],
+    },
+  },
   server: {
     port: 4000,
   },

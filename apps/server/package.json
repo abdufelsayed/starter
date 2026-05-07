@@ -24,6 +24,6 @@
     "@types/bun": "catalog:build",
     "@typescript/native-preview": "catalog:build",
     "pino-pretty": "catalog:logging",
-    "tsdown": "^0.21.10"
+    "tsdown": "^0.22.0"
   }
 }

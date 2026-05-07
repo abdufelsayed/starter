@@ -39,7 +39,7 @@
     "react-day-picker": "^9.14.0",
     "react-dom": "catalog:react",
     "react-phone-number-input": "^3.4.16",
-    "react-resizable-panels": "^4.10.0",
+    "react-resizable-panels": "^4.11.0",
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "catalog:tailwind",
@@ -53,7 +53,7 @@
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "@typescript/native-preview": "catalog:build",
-    "shadcn": "^4.5.0",
+    "shadcn": "^4.7.0",
     "tailwindcss": "catalog:tailwind"
   }
 }

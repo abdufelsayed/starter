@@ -4,10 +4,10 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "dev": "vite dev --port=4000",
-    "build": "vite build",
+    "dev": "bun --bun vite dev --port=4000",
+    "build": "bun --bun vite build",
     "start": "node .output/server/index.mjs",
-    "preview": "vite preview",
+    "preview": "bun --bun vite preview",
     "typecheck": "${BUN_INSTALL:-$HOME/.bun}/bin/bun --bun fumadocs-mdx && tsgo --noEmit",
     "postinstall": "${BUN_INSTALL:-$HOME/.bun}/bin/bun --bun fumadocs-mdx",
     "clean": "git clean -xdf .output node_modules dist .turbo .tanstack .source .tsbuildinfo"
@@ -15,13 +15,14 @@
   "dependencies": {
     "@tanstack/react-router": "catalog:tanstack",
     "@tanstack/react-start": "catalog:tanstack",
-    "fumadocs-core": "16.8.5",
-    "fumadocs-mdx": "14.3.2",
-    "fumadocs-ui": "16.8.5",
+    "fumadocs-core": "16.8.8",
+    "fumadocs-mdx": "15.0.0",
+    "fumadocs-ui": "16.8.8",
     "lucide-react": "catalog:ui",
     "react": "catalog:react",
     "react-dom": "catalog:react",
-    "tailwind-merge": "catalog:tailwind"
+    "tailwind-merge": "catalog:tailwind",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",

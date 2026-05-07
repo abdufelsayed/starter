@@ -11,7 +11,7 @@
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
-    "nanoid": "^5.1.9"
+    "nanoid": "^5.1.11"
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",

@@ -19,6 +19,6 @@
     "@starter/tsconfig": "workspace:*",
     "@types/node": "catalog:build",
     "@typescript/native-preview": "catalog:build",
-    "vite": "^8.0.10"
+    "vite": "^8.0.11"
   }
 }

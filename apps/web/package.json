@@ -34,7 +34,7 @@
     "lucide-react": "catalog:ui",
     "react": "catalog:react",
     "react-dom": "catalog:react",
-    "react-qr-code": "^2.0.18",
+    "react-qr-code": "^2.0.21",
     "sonner": "catalog:ui",
     "ua-parser-js": "^2.0.9",
     "zod": "catalog:"
