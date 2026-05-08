@@ -2,6 +2,7 @@
   "name": "@starter/auth",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "exports": {
     ".": "./src/index.tsx",
     "./react": "./src/react/index.ts"
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",
+    "@types/node": "catalog:build",
     "@types/react": "catalog:react",
     "@typescript/native-preview": "catalog:build"
   }

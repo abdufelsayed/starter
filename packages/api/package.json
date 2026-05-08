@@ -19,7 +19,7 @@
     "@orpc/openapi": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@orpc/zod": "catalog:orpc",
-    "@sentry/bun": "catalog:sentry",
+    "@sentry/node": "catalog:sentry",
     "@starter/auth": "workspace:*",
     "@starter/db": "workspace:*",
     "@starter/shared": "workspace:*",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",
-    "@types/bun": "catalog:build",
+    "@types/node": "catalog:build",
     "@typescript/native-preview": "catalog:build"
   }
 }

@@ -1,7 +1,6 @@
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { ORPCInstrumentation } from "@orpc/otel";
-import * as Sentry from "@sentry/bun";
-import { logger } from "@server/lib/logger";
+import * as Sentry from "@sentry/node";
 
 import { serverEnv } from "@starter/env/server";
 import {
@@ -9,9 +8,13 @@ import {
   createBatchSpanProcessor,
   createOtelResource,
   createTraceSampler,
+  hasUsableAxiomConfig,
+  hasUsableSentryDsn,
   setupGracefulShutdown,
   setupUncaughtErrorHandling,
 } from "@starter/logging/instrumentation";
+
+import { logger } from "./src/lib/logger";
 
 // =============================================================================
 // OpenTelemetry SDK Setup
@@ -28,33 +31,44 @@ const otelConfig = {
   serviceVersion: serverEnv.OTEL_SERVICE_VERSION,
 };
 
-const exporter = createAxiomExporter(otelConfig);
+const spanProcessor = hasUsableAxiomConfig(otelConfig)
+  ? createBatchSpanProcessor(createAxiomExporter(otelConfig))
+  : undefined;
 
 const sdk = new NodeSDK({
   instrumentations: [new ORPCInstrumentation()],
   resource: createOtelResource(otelConfig),
   sampler: createTraceSampler(serverEnv.NODE_ENV),
-  spanProcessor: createBatchSpanProcessor(exporter),
+  spanProcessors: spanProcessor ? [spanProcessor] : [],
 });
 
 sdk.start();
 
 logger.info(`OpenTelemetry initialized for ${serverEnv.OTEL_SERVICE_NAME}`);
-logger.info(`Exporting traces to Axiom dataset: ${serverEnv.AXIOM_DATASET}`);
+if (spanProcessor) {
+  logger.info(`Exporting traces to Axiom dataset: ${serverEnv.AXIOM_DATASET}`);
+} else {
+  logger.warn("Axiom exporter disabled until real credentials are configured");
+}
 
 // =============================================================================
 // Sentry Initialization
 // =============================================================================
 
-Sentry.init({
-  dsn: serverEnv.SENTRY_DSN,
-  environment: serverEnv.NODE_ENV,
-  release: serverEnv.OTEL_SERVICE_VERSION,
-  sendDefaultPii: true,
-  tracesSampleRate: serverEnv.NODE_ENV === "production" ? 0.1 : 1,
-});
+if (hasUsableSentryDsn(serverEnv.SENTRY_DSN)) {
+  Sentry.init({
+    dsn: serverEnv.SENTRY_DSN,
+    environment: serverEnv.NODE_ENV,
+    release: serverEnv.OTEL_SERVICE_VERSION,
+    sendDefaultPii: true,
+    skipOpenTelemetrySetup: true,
+    tracesSampleRate: serverEnv.NODE_ENV === "production" ? 0.1 : 1,
+  });
 
-logger.info(`Sentry initialized for ${serverEnv.NODE_ENV}`);
+  logger.info(`Sentry initialized for ${serverEnv.NODE_ENV}`);
+} else {
+  logger.warn("Sentry disabled until a real DSN is configured");
+}
 
 // =============================================================================
 // Error Handling & Graceful Shutdown

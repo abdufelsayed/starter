@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@starter/tsconfig": "workspace:*",
+    "@types/node": "catalog:build",
     "@typescript/native-preview": "catalog:build",
     "pino-pretty": "catalog:logging"
   }

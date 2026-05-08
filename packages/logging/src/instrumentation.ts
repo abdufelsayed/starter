@@ -51,6 +51,29 @@ export function createAxiomExporter(config: OtelConfig) {
   });
 }
 
+function isPlaceholderValue(value: string): boolean {
+  const normalized = value.toLowerCase();
+  return normalized.includes("placeholder") || normalized.includes("example");
+}
+
+export function hasUsableAxiomConfig(config: OtelConfig): boolean {
+  return (
+    config.axiom.token.trim().length > 0 &&
+    config.axiom.dataset.trim().length > 0 &&
+    !isPlaceholderValue(config.axiom.token) &&
+    !isPlaceholderValue(config.axiom.dataset)
+  );
+}
+
+export function hasUsableSentryDsn(dsn: string): boolean {
+  try {
+    const url = new URL(dsn);
+    return !isPlaceholderValue(dsn) && url.hostname !== "example.com";
+  } catch {
+    return false;
+  }
+}
+
 export function createTraceSampler(environment: string) {
   return new TraceIdRatioBasedSampler(environment === "production" ? 0.1 : 1);
 }

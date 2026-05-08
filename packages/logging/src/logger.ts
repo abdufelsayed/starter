@@ -24,6 +24,24 @@ const otelMixin = (): Record<string, string> => {
   return {};
 };
 
+function isPlaceholderValue(value: string): boolean {
+  const normalized = value.toLowerCase();
+  return normalized.includes("placeholder") || normalized.includes("example");
+}
+
+function hasUsableAxiomConfig(
+  config: LoggerConfig["axiom"],
+): config is NonNullable<LoggerConfig["axiom"]> {
+  if (!config) return false;
+
+  return (
+    config.dataset.trim().length > 0 &&
+    config.token.trim().length > 0 &&
+    !isPlaceholderValue(config.dataset) &&
+    !isPlaceholderValue(config.token)
+  );
+}
+
 export function createLogger(config: LoggerConfig): Logger {
   const isDevelopment = config.environment === "development";
 
@@ -41,25 +59,14 @@ export function createLogger(config: LoggerConfig): Logger {
   };
 
   if (isDevelopment) {
-    return pino({
-      ...baseOptions,
-      transport: {
-        options: {
-          colorize: true,
-          singleLine: false,
-          translateTime: "HH:MM:ss",
-          ignore: "pid,hostname",
-        },
-        target: "pino-pretty",
-      },
-    });
+    return pino(baseOptions);
   }
 
   const targets: pino.TransportTargetOptions[] = [
     { options: { destination: 1 }, target: "pino/file" },
   ];
 
-  if (config.axiom) {
+  if (hasUsableAxiomConfig(config.axiom)) {
     targets.push({
       options: {
         dataset: config.axiom.dataset,

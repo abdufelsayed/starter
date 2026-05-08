@@ -1,5 +1,5 @@
 {
-  "extends": "@starter/tsconfig/bun.json",
+  "extends": "@starter/tsconfig/node-jsx.json",
   "compilerOptions": {
     "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo"

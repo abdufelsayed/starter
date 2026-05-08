@@ -44,15 +44,15 @@ Use `packages/ui` for reusable product-agnostic primitives only.
 The starter already includes the TanStack libraries needed for most medium/large app surfaces. Use
 the installed stack before adding another state, table, or form library.
 
-| Need | Use | Pattern |
-| --- | --- | --- |
-| URL state, route params, route layouts, auth gates | TanStack Router | `createFileRoute`, `validateSearch`, `beforeLoad`, `loader`, typed links/navigation |
-| SSR app runtime and request plumbing | TanStack Start | server functions for headers, redirects, middleware, and framework integration |
-| Server state | TanStack Query | oRPC/Better Auth `queryOptions` and `mutationOptions`, loader preloads, targeted invalidation |
-| Router + Query SSR hydration | `@tanstack/react-router-ssr-query` | the existing router/query provider setup in `src/router.tsx` and `src/lib/tanstack-query` |
-| Interactive forms | TanStack Form | `useForm`, shared Zod schemas, shadcn `Field` components |
-| Data grids | TanStack Table | controlled sorting/filtering/pagination/selection state with `@starter/ui` table/data-grid markup |
-| Development diagnostics | TanStack Devtools | inspect Router and Query behavior during development only |
+| Need                                               | Use                                | Pattern                                                                                           |
+| -------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------- |
+| URL state, route params, route layouts, auth gates | TanStack Router                    | `createFileRoute`, `validateSearch`, `beforeLoad`, `loader`, typed links/navigation               |
+| SSR app runtime and request plumbing               | TanStack Start                     | server functions for headers, redirects, middleware, and framework integration                    |
+| Server state                                       | TanStack Query                     | oRPC/Better Auth `queryOptions` and `mutationOptions`, loader preloads, targeted invalidation     |
+| Router + Query SSR hydration                       | `@tanstack/react-router-ssr-query` | the existing router/query provider setup in `src/router.tsx` and `src/lib/tanstack-query`         |
+| Interactive forms                                  | TanStack Form                      | `useForm`, shared Zod schemas, shadcn `Field` components                                          |
+| Data grids                                         | TanStack Table                     | controlled sorting/filtering/pagination/selection state with `@starter/ui` table/data-grid markup |
+| Development diagnostics                            | TanStack Devtools                  | inspect Router and Query behavior during development only                                         |
 
 Do not add TanStack DB, Store, Virtual, Pacer, Hotkeys, AI, or another TanStack package as a default
 starter pattern. Add a new library only when a task explicitly needs it and the root package catalog

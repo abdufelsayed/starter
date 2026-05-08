@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Library",
-  "extends": "./base.json",
+  "display": "Node JSX",
+  "extends": "./node.json",
   "compilerOptions": {
-    "lib": ["es2023", "DOM"]
+    "jsx": "react-jsx"
   }
 }

@@ -4,7 +4,8 @@ A modern, production-ready full-stack monorepo boilerplate.
 
 ## Tech Stack
 
-- **Runtime:** [Bun](https://bun.sh)
+- **Runtime:** [Node.js](https://nodejs.org)
+- **Package manager:** [Bun](https://bun.sh)
 - **Monorepo:** [Turborepo](https://turbo.build)
 - **Frontend:**
   - [TanStack Start](https://tanstack.com/start) - Full-stack React framework
@@ -17,7 +18,7 @@ A modern, production-ready full-stack monorepo boilerplate.
   - shadcn/ui-style components with Base UI primitives
   - [better-themes](https://www.npmjs.com/package/better-themes) - Theme management
 - **Backend:**
-  - [Bun.serve()](https://bun.sh/docs/api/http) - Native HTTP server
+  - [h3](https://h3.dev) - Minimal HTTP server framework
   - [oRPC](https://orpc.dev) - End-to-end type-safe APIs
   - [Better Auth](https://better-auth.com) - Authentication
   - [Drizzle ORM](https://orm.drizzle.team) - Type-safe SQL ORM
@@ -42,7 +43,7 @@ A modern, production-ready full-stack monorepo boilerplate.
 starter/
 ├── apps/
 │   ├── web/           # TanStack Start frontend (port 3000)
-│   ├── server/        # Bun.serve() backend API (port 8080)
+│   ├── server/        # Node.js h3 backend API (port 8080)
 │   └── docs/          # Fumadocs documentation site (port 4000)
 ├── packages/
 │   ├── api/           # oRPC contracts, routers, middleware, and handlers

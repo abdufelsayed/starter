@@ -8,9 +8,10 @@
   ],
   "exports": {
     "./base.json": "./base.json",
-    "./bun.json": "./bun.json",
     "./library.json": "./library.json",
+    "./node-jsx.json": "./node-jsx.json",
     "./node.json": "./node.json",
+    "./react-node.json": "./react-node.json",
     "./react-library.json": "./react-library.json",
     "./tanstack-start.json": "./tanstack-start.json"
   }

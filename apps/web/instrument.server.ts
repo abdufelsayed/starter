@@ -8,11 +8,13 @@ import {
   createBatchSpanProcessor,
   createOtelResource,
   createTraceSampler,
+  hasUsableAxiomConfig,
+  hasUsableSentryDsn,
   setupGracefulShutdown,
   setupUncaughtErrorHandling,
 } from "@starter/logging/instrumentation";
 
-import { logger } from "@/lib/logger";
+import { logger } from "./src/lib/logger";
 
 // =============================================================================
 // OpenTelemetry SDK Setup
@@ -29,33 +31,43 @@ const otelConfig = {
   serviceVersion: webEnv.OTEL_SERVICE_VERSION,
 };
 
-const exporter = createAxiomExporter(otelConfig);
+const spanProcessor = hasUsableAxiomConfig(otelConfig)
+  ? createBatchSpanProcessor(createAxiomExporter(otelConfig))
+  : undefined;
 
 const sdk = new NodeSDK({
   instrumentations: [new HttpInstrumentation()],
   resource: createOtelResource(otelConfig),
   sampler: createTraceSampler(webEnv.NODE_ENV),
-  spanProcessor: createBatchSpanProcessor(exporter),
+  spanProcessors: spanProcessor ? [spanProcessor] : [],
 });
 
 sdk.start();
 
 logger.info(`OpenTelemetry initialized for ${webEnv.OTEL_SERVICE_NAME}`);
-logger.info(`Exporting traces to Axiom dataset: ${webEnv.AXIOM_DATASET}`);
+if (spanProcessor) {
+  logger.info(`Exporting traces to Axiom dataset: ${webEnv.AXIOM_DATASET}`);
+} else {
+  logger.warn("Axiom exporter disabled until real credentials are configured");
+}
 
 // =============================================================================
 // Sentry Initialization
 // =============================================================================
 
-Sentry.init({
-  dsn: webEnv.VITE_SENTRY_DSN,
-  environment: webEnv.NODE_ENV,
-  release: webEnv.OTEL_SERVICE_VERSION,
-  sendDefaultPii: true,
-  tracesSampleRate: webEnv.NODE_ENV === "production" ? 0.1 : 1,
-});
+if (hasUsableSentryDsn(webEnv.VITE_SENTRY_DSN)) {
+  Sentry.init({
+    dsn: webEnv.VITE_SENTRY_DSN,
+    environment: webEnv.NODE_ENV,
+    release: webEnv.OTEL_SERVICE_VERSION,
+    sendDefaultPii: true,
+    tracesSampleRate: webEnv.NODE_ENV === "production" ? 0.1 : 1,
+  });
 
-logger.info(`Sentry initialized for ${webEnv.NODE_ENV}`);
+  logger.info(`Sentry initialized for ${webEnv.NODE_ENV}`);
+} else {
+  logger.warn("Sentry disabled until a real DSN is configured");
+}
 
 // =============================================================================
 // Error Handling & Graceful Shutdown

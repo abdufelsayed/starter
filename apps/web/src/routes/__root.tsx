@@ -1,8 +1,7 @@
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { ThemeProvider } from "better-themes";
+import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 
 import { webUrls } from "@starter/env/web";
@@ -13,7 +12,6 @@ import { seo } from "@/lib/seo";
 import { routeLoggingMiddleware } from "@/middleware/route-logging";
 import { ErrorBoundary } from "../components/error-boundary";
 import { NotFound } from "../components/not-found";
-import TanStackQueryDevtools from "../lib/tanstack-query/devtools";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -55,8 +53,6 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const showDevtools = import.meta.env.DEV;
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -75,7 +71,40 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <TooltipProvider>
             {children}
             <Toaster />
-            {showDevtools ? (
+            <ClientDevtools />
+          </TooltipProvider>
+        </ThemeProvider>
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+function ClientDevtools() {
+  const [Devtools, setDevtools] = useState<React.ComponentType | null>(null);
+
+  useEffect(() => {
+    if (import.meta.env.SSR || !import.meta.env.DEV) return undefined;
+
+    let mounted = true;
+
+    async function loadDevtools() {
+      const [
+        { TanStackDevtools },
+        { TanStackRouterDevtoolsPanel },
+        { default: TanStackQueryDevtools },
+      ] = await Promise.all([
+        import("@tanstack/react-devtools"),
+        import("@tanstack/react-router-devtools"),
+        import("../lib/tanstack-query/devtools"),
+      ]);
+
+      if (!mounted) return;
+
+      setDevtools(
+        () =>
+          function DevtoolsPanel() {
+            return (
               <TanStackDevtools
                 config={{
                   position: "bottom-left",
@@ -88,11 +117,17 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   TanStackQueryDevtools,
                 ]}
               />
-            ) : null}
-          </TooltipProvider>
-        </ThemeProvider>
-        <Scripts />
-      </body>
-    </html>
-  );
+            );
+          },
+      );
+    }
+
+    void loadDevtools();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  return Devtools ? <Devtools /> : null;
 }

@@ -14,7 +14,7 @@ import type { Logger } from "pino";
 import { auth } from "@starter/auth";
 import { nanoid } from "@starter/shared/nanoid";
 
-import { router } from "../router";
+import { router } from "../router/index";
 
 export interface CorsConfig {
   origin: string[];

@@ -4,14 +4,14 @@ These rules apply to `apps/server`.
 
 ## Purpose
 
-`apps/server` owns the Bun HTTP process and mounts backend integrations. Product behavior belongs in
+`apps/server` owns the Node.js HTTP process and mounts backend integrations. Product behavior belongs in
 workspace packages, especially `@starter/api`, `@starter/auth`, `@starter/env`, and
 `@starter/logging`.
 
 ## Rules
 
-- Keep server entrypoints thin: load env, initialize observability, create handlers, and start
-  `Bun.serve`.
+- Keep server entrypoints thin: load env, initialize observability, create handlers, and start the
+  h3 server with Node.js.
 - Do not implement product CRUD, authorization policy, billing logic, or database queries directly
   in `apps/server`.
 - Mount oRPC through `@starter/api` handlers and Better Auth through `@starter/auth`.

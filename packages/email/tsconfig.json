@@ -1,8 +1,7 @@
 {
-  "extends": "@starter/tsconfig/react-library.json",
+  "extends": "@starter/tsconfig/react-node.json",
   "compilerOptions": {
     "incremental": true,
-    "types": ["node"],
     "tsBuildInfoFile": ".tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"]

@@ -27,7 +27,7 @@ export const webEnv = createEnv({
   emptyStringAsUndefined: true,
 
   extends: [sharedEnv],
-  isServer: typeof window === "undefined",
+  isServer: typeof globalThis.window === "undefined",
   onValidationError,
   runtimeEnv: import.meta.env,
   server: {

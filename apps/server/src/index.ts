@@ -1,3 +1,5 @@
+import { H3 } from "h3";
+
 import { createHandlers } from "@starter/api";
 import { auth } from "@starter/auth";
 import { serverEnv, serverUrls } from "@starter/env/server";
@@ -65,62 +67,90 @@ function withStatus(response: Response, status: number, statusText: string): Res
   });
 }
 
-export async function fetch(request: Request): Promise<Response> {
-  const url = new URL(request.url);
-  const origin = request.headers.get("Origin");
+async function handleHealthRequest(request: Request): Promise<Response> {
+  const result = await openApiHandler.handle(request, {
+    context: {},
+    prefix: "/",
+  });
 
-  if (url.pathname === "/health" || url.pathname === "/ready") {
-    const result = await openApiHandler.handle(request, {
-      context: {},
-      prefix: "/",
-    });
-
-    if (result.matched) {
-      if (url.pathname === "/ready" && (await isNotReadyResponse(result.response))) {
-        return withStatus(result.response, 503, "Service Unavailable");
-      }
-
-      return result.response;
-    }
-  }
-
-  if (url.pathname.startsWith("/rpc")) {
-    const result = await rpcHandler.handle(request, {
-      context: {},
-      prefix: "/rpc",
-    });
-
-    if (result.matched) {
-      return result.response;
-    }
-
-    return new Response("Not found", { status: 404 });
-  }
-
-  if (url.pathname.startsWith("/api/auth")) {
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: getCorsHeaders(origin),
-        status: 204,
-      });
-    }
-
-    const response = await auth.handler(request);
-    return addCorsHeaders(response, origin);
-  }
-
-  if (url.pathname.startsWith("/api")) {
-    const result = await openApiHandler.handle(request, {
-      context: {},
-      prefix: "/api",
-    });
-
-    if (result.matched) {
-      return result.response;
-    }
-
-    return new Response("Not found", { status: 404 });
+  if (result.matched) {
+    return result.response;
   }
 
   return new Response("Not found", { status: 404 });
+}
+
+async function handleReadyRequest(request: Request): Promise<Response> {
+  const result = await openApiHandler.handle(request, {
+    context: {},
+    prefix: "/",
+  });
+
+  if (result.matched) {
+    if (await isNotReadyResponse(result.response)) {
+      return withStatus(result.response, 503, "Service Unavailable");
+    }
+
+    return result.response;
+  }
+
+  return new Response("Not found", { status: 404 });
+}
+
+async function handleRpcRequest(request: Request): Promise<Response> {
+  const result = await rpcHandler.handle(request, {
+    context: {},
+    prefix: "/rpc",
+  });
+
+  if (result.matched) {
+    return result.response;
+  }
+
+  return new Response("Not found", { status: 404 });
+}
+
+async function handleAuthRequest(request: Request): Promise<Response> {
+  const origin = request.headers.get("Origin");
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      headers: getCorsHeaders(origin),
+      status: 204,
+    });
+  }
+
+  const response = await auth.handler(request);
+  return addCorsHeaders(response, origin);
+}
+
+async function handleOpenApiRequest(request: Request): Promise<Response> {
+  const result = await openApiHandler.handle(request, {
+    context: {},
+    prefix: "/api",
+  });
+
+  if (result.matched) {
+    return result.response;
+  }
+
+  return new Response("Not found", { status: 404 });
+}
+
+export const app = new H3({
+  debug: serverEnv.NODE_ENV === "development",
+  onError: (error, event) => {
+    logger.error({ err: error, path: event.url.pathname }, "Unhandled server error");
+  },
+});
+
+app.all("/health", (event) => handleHealthRequest(event.req));
+app.all("/ready", (event) => handleReadyRequest(event.req));
+app.all("/rpc/**", (event) => handleRpcRequest(event.req));
+app.all("/api/auth/**", (event) => handleAuthRequest(event.req));
+app.all("/api/**", (event) => handleOpenApiRequest(event.req));
+app.all("/**", () => new Response("Not found", { status: 404 }));
+
+export async function fetch(request: Request): Promise<Response> {
+  return await app.fetch(request);
 }

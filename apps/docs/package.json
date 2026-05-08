@@ -4,12 +4,12 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "dev": "bun --bun vite dev --port=4000",
-    "build": "bun --bun vite build",
+    "dev": "vite dev --port=4000",
+    "build": "NODE_ENV=production vite build",
     "start": "node .output/server/index.mjs",
-    "preview": "bun --bun vite preview",
-    "typecheck": "${BUN_INSTALL:-$HOME/.bun}/bin/bun --bun fumadocs-mdx && tsgo --noEmit",
-    "postinstall": "${BUN_INSTALL:-$HOME/.bun}/bin/bun --bun fumadocs-mdx",
+    "preview": "vite preview",
+    "typecheck": "fumadocs-mdx && tsgo --noEmit",
+    "postinstall": "fumadocs-mdx",
     "clean": "git clean -xdf .output node_modules dist .turbo .tanstack .source .tsbuildinfo"
   },
   "dependencies": {
@@ -28,7 +28,6 @@
     "@starter/tsconfig": "workspace:*",
     "@tailwindcss/vite": "catalog:tailwind",
     "@tanstack/react-router-devtools": "catalog:tanstack",
-    "@types/bun": "catalog:build",
     "@types/mdx": "^2.0.13",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",

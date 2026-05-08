@@ -1,13 +1,13 @@
 # @starter/server
 
-Bun HTTP backend API server.
+Node.js h3 backend API server.
 
 This README is explanatory. The strict implementation contract for agents is
 [`apps/server/AGENTS.md`](./AGENTS.md).
 
 ## Stack
 
-- [Bun.serve()](https://bun.sh/docs/api/http) - Native HTTP server
+- [h3](https://h3.dev) - Minimal HTTP server framework
 - [oRPC](https://orpc.dev) - Type-safe RPC and OpenAPI
 - [Better Auth](https://better-auth.com) - Authentication
 - [Drizzle ORM](https://orm.drizzle.team) - Database access

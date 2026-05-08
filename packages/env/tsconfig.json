@@ -1,11 +1,11 @@
 {
-  "extends": "@starter/tsconfig/bun.json",
+  "extends": "@starter/tsconfig/node.json",
   "compilerOptions": {
     "incremental": true,
+    "lib": ["es2023", "DOM", "DOM.Iterable"],
     "tsBuildInfoFile": ".tsbuildinfo",
     "outDir": "dist",
-    "rootDir": "src",
-    "types": ["vite/client", "node"]
+    "rootDir": "src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

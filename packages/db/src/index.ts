@@ -2,7 +2,7 @@ import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { serverEnv } from "@starter/env/server";
 
-import * as schema from "./schema";
+import * as schema from "./schema/index";
 
 declare global {
   var starterDb: NodePgDatabase<typeof schema> | undefined;

@@ -1,13 +1,13 @@
+import { serve } from "h3";
+
 import { serverEnv, serverUrls } from "@starter/env/server";
 
-import { fetch } from ".";
+import { app } from "./index";
 import { logger } from "./lib/logger";
 
 logger.info(`Starting server on port ${serverEnv.PORT}...`);
 
-Bun.serve({
-  development: serverEnv.NODE_ENV === "development",
-  fetch,
+serve(app, {
   port: parseInt(serverEnv.PORT, 10),
 });
 

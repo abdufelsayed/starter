@@ -21,7 +21,7 @@ const config = defineConfig({
     viteReact(),
     babel({ presets: [reactCompilerPreset()] }),
     nitro({
-      preset: "bun",
+      preset: "node_server",
       apiBaseURL: "/api",
     }) as PluginOption,
   ],

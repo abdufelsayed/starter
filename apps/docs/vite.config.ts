@@ -30,6 +30,6 @@ export default defineConfig({
       },
     }),
     react(),
-    nitro({ preset: "bun" }) as PluginOption,
+    nitro({ preset: "node_server" }) as PluginOption,
   ],
 });

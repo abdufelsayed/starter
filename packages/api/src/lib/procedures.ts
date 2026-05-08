@@ -1,6 +1,6 @@
 import { implement } from "@orpc/server";
 
-import { contract } from "../contract";
+import { contract } from "../contract/index";
 import { useAuth } from "../middlewares/auth";
 import { useSentry } from "../middlewares/sentry";
 import type { ORPCContext } from "./context";

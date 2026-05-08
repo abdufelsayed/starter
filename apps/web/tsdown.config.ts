@@ -4,14 +4,14 @@ const externalNonWorkspacePackage = (id: string) =>
   !id.startsWith(".") && !id.startsWith("/") && !id.startsWith("@starter/");
 
 export default defineConfig({
-  entry: ["./src/server.ts", "./instrument.server.ts"],
+  entry: ["./instrument.server.ts"],
   format: ["esm"],
-  clean: true,
+  clean: false,
   deps: {
     alwaysBundle: [/^@starter\//],
     neverBundle: externalNonWorkspacePackage,
   },
-  outDir: "dist",
+  outDir: ".output/server",
+  platform: "node",
   target: "es2023",
-  minify: true,
 });

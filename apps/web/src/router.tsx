@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/tanstackstart-react";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
@@ -26,33 +25,38 @@ export const getRouter = () => {
     router,
   });
 
-  if (!router.isServer && !import.meta.env.DEV) {
-    Sentry.init({
-      dsn: import.meta.env.VITE_SENTRY_DSN,
-      environment: import.meta.env.MODE,
-      release: import.meta.env.VITE_APP_VERSION ?? "development",
-
-      // Adds request headers and IP for users, for more info visit:
-      // https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/configuration/options/#sendDefaultPii
-      sendDefaultPii: true,
-
-      integrations: [
+  if (!import.meta.env.SSR && !import.meta.env.DEV) {
+    void (async () => {
+      const Sentry = await import("@sentry/tanstackstart-react");
+      const integrations = [
         Sentry.tanstackRouterBrowserTracingIntegration(router),
         Sentry.replayIntegration(),
         Sentry.browserProfilingIntegration(),
-      ],
+      ];
 
-      // Adjust sample rates for production vs development
-      tracesSampleRate: import.meta.env.DEV ? 0.1 : 1,
+      Sentry.init({
+        dsn: import.meta.env.VITE_SENTRY_DSN,
+        environment: import.meta.env.MODE,
+        release: import.meta.env.VITE_APP_VERSION ?? "development",
 
-      // Capture Replay for 10% of all sessions,
-      // Plus for 100% of sessions with an error.
-      replaysSessionSampleRate: 0.1,
-      replaysOnErrorSampleRate: 1,
+        // Adds request headers and IP for users, for more info visit:
+        // https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/configuration/options/#sendDefaultPii
+        sendDefaultPii: true,
 
-      // Enable profiling for performance insights
-      profilesSampleRate: import.meta.env.DEV ? 0.1 : 1,
-    });
+        integrations,
+
+        // Adjust sample rates for production vs development
+        tracesSampleRate: import.meta.env.DEV ? 0.1 : 1,
+
+        // Capture Replay for 10% of all sessions,
+        // Plus for 100% of sessions with an error.
+        replaysSessionSampleRate: 0.1,
+        replaysOnErrorSampleRate: 1,
+
+        // Enable profiling for performance insights
+        profilesSampleRate: import.meta.env.DEV ? 0.1 : 1,
+      });
+    })();
   }
 
   return router;

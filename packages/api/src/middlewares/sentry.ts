@@ -1,6 +1,6 @@
 import { context, SpanStatusCode, trace } from "@opentelemetry/api";
 import { getLogger } from "@orpc/experimental-pino";
-import * as Sentry from "@sentry/bun";
+import * as Sentry from "@sentry/node";
 
 import { base } from "../lib/context";
 
@@ -43,45 +43,47 @@ export const useSentry = base.middleware(async ({ context: ctx, next, path }) =>
     if (client.userAgent) span.setAttribute("user_agent.original", client.userAgent);
   }
 
-  Sentry.setTag("api.path", pathStr);
-  Sentry.setTag("request_id", requestId);
-  if (traceId) {
-    Sentry.setTag("trace_id", traceId);
-  }
-  Sentry.setContext("request", {
-    id: requestId,
-    path: pathStr,
-  });
-  Sentry.setContext("client", client);
-
-  if (ctx.user) {
-    Sentry.setUser({
-      id: ctx.user.id,
-      email: ctx.user.email,
-      ip_address: client.ip,
+  return Sentry.withScope(async (scope) => {
+    scope.setTag("api.path", pathStr);
+    scope.setTag("request_id", requestId);
+    if (traceId) {
+      scope.setTag("trace_id", traceId);
+    }
+    scope.setContext("request", {
+      id: requestId,
+      path: pathStr,
     });
-  }
+    scope.setContext("client", client);
 
-  try {
-    return await next();
-  } catch (error) {
-    if (span) {
-      span.setStatus({ code: SpanStatusCode.ERROR });
-      if (error instanceof Error) {
-        span.recordException(error);
-      }
+    if (ctx.user) {
+      scope.setUser({
+        id: ctx.user.id,
+        email: ctx.user.email,
+        ip_address: client.ip,
+      });
     }
 
-    logger?.error({ err: error, path: pathStr, client }, "Request failed");
+    try {
+      return await next();
+    } catch (error) {
+      if (span) {
+        span.setStatus({ code: SpanStatusCode.ERROR });
+        if (error instanceof Error) {
+          span.recordException(error);
+        }
+      }
 
-    Sentry.captureException(error, {
-      tags: {
-        path: pathStr,
-        request_id: requestId,
-      },
-      extra: { trace_id: traceId },
-    });
+      logger?.error({ err: error, path: pathStr, client }, "Request failed");
 
-    throw error;
-  }
+      Sentry.captureException(error, {
+        tags: {
+          path: pathStr,
+          request_id: requestId,
+        },
+        extra: { trace_id: traceId },
+      });
+
+      throw error;
+    }
+  });
 });

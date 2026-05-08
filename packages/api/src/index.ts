@@ -4,7 +4,7 @@ import type {
   RouterClient as ORPCRouterClient,
 } from "@orpc/server";
 
-import { router } from "./router";
+import { router } from "./router/index";
 
 export { createHandlers } from "./lib/handlers";
 export { router };

@@ -7,14 +7,15 @@ This README is explanatory. The strict implementation contract for agents is
 
 ## Configs
 
-| Config                | Use case            |
-| --------------------- | ------------------- |
-| `base.json`           | Strict base config  |
-| `bun.json`            | Bun runtime         |
-| `react-library.json`  | React packages      |
-| `tanstack-start.json` | TanStack Start apps |
-| `library.json`        | General packages    |
-| `node.json`           | Node.js tooling     |
+| Config                | Use case                                            |
+| --------------------- | --------------------------------------------------- |
+| `base.json`           | Strict base config                                  |
+| `react-library.json`  | React packages                                      |
+| `node-jsx.json`       | Node.js packages that consume TSX source            |
+| `react-node.json`     | React packages with Node.js runtime helpers         |
+| `tanstack-start.json` | TanStack Start apps                                 |
+| `library.json`        | Browser-capable packages                            |
+| `node.json`           | Node.js packages using workspace bundler resolution |
 
 ## Usage
 
